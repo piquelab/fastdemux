@@ -1,0 +1,2 @@
+# fastdemux
+Demultiplexing by genotype
