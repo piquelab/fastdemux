@@ -148,7 +148,6 @@ int main(int argc, char *argv[]) {
       // Initialize allele counts
       int ref_count = 0, alt_count = 0;
 
-      fprintf(stderr, "Processing %s %d %c %c\n",bcf_hdr_id2name(vcf_hdr, rec->rid), rec->pos, ref_allele, alt_allele);
       
 
       //Extract dosages 
@@ -158,6 +157,7 @@ int main(int argc, char *argv[]) {
       if (bcf_get_format_float(vcf_hdr, rec, "DS", &dosages, &nds_arr) < 0) continue;
 
       /*
+      fprintf(stderr, "Processing %d %s %d %c %c\n",rec->rid, bcf_hdr_id2name(vcf_hdr, rec->rid), rec->pos, ref_allele, alt_allele);      
       for (int i = 0; i < nsmpl; i++) {
 	fprintf(stderr,"%f ",dosages[i]);
       }
@@ -200,12 +200,13 @@ int main(int argc, char *argv[]) {
       free(dosages);
 
 
+      //Need to chr are the same 
 
       // Setup pileup
       hts_itr_t *iter = sam_itr_queryi(bam_idx, rec->rid, rec->pos, rec->pos + 1);
       if (iter == NULL) continue;
 
-      //      fprintf(stderr,"iter not null\n");
+      //           fprintf(stderr,"iter not null\n");
 
       // Assuming `barcodes` is a khash_t(barcode)* containing valid CB tags
       // and `reads_hash` is a khash_t(barcode)* used to track unique CB+UB combinations
