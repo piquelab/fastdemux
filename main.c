@@ -26,22 +26,87 @@ typedef struct {
 KHASH_MAP_INIT_STR(bc_info_hash_t, bc_info_t)
 
 
+// Define the hash table for storing barcodes (CB tags) with an index to array, 
+KHASH_MAP_INIT_INT64(bc_hash_t,int) //converting bc to integer, 32 bits should be enough but usign 64 for longer BC.
+
+
+//encodes A,C,G,T in binary 00, 01, 10, 11
+int encodeACGT(char c){
+  c=c&0xDF; // 11011111 sets letter to uppercase
+  switch(c){
+  case 'A':
+    return 0;
+  case 'C':
+    return 1;
+  case 'G':
+    return 2;
+  case 'T':
+    return 3;
+  default:
+    return -1;
+  }
+}
+
+/*
+unsigned long int packKmer(char *s,int k){
+  int Base,j;
+  unsigned long int kmer=0;
+  //  assert((k<<1)<sizeof(unigned long int));
+  for(j=0;j<k;j++){
+    Base=encodeACGT(s[j]);
+    if(Base==-1)
+      continue; // This will ignore if not ACGT and continue. Check if that is the desired behaviour. 
+      //return 0xFFFFFFFFFFFFFFFF; //
+    kmer=(kmer<<2)+Base;
+  }
+  return kmer;
+}
+
+*/
+unsigned long int packKmer(char *s, int k) {
+  static const int encoding[128] = {
+    ['A'] = 0, ['C'] = 1, ['G'] = 2, ['T'] = 3,
+    ['a'] = 0, ['c'] = 1, ['g'] = 2, ['t'] = 3
+  };
+  unsigned long int kmer = 0;
+  for (int j = 0; j < k; ++j) {
+    char c = s[j] & 0xDF; // Convert to uppercase
+    if (c != 'A' && c != 'C' && c != 'G' && c != 'T') {
+      //return 0xFFFFFFFFFFFFFFFF;
+    }
+    kmer = (kmer << 2) | encoding[c]; // Use bitwise OR for slight optimization
+  }
+  return kmer;
+}
+
+
+void unPackKmer(unsigned long int kmer,int k,char *s){
+  int j;
+  char ACGT[]={"ACGT"};
+  for(j=k-1;j>=0;j--){
+    s[j]=ACGT[(kmer & 0x03)];
+    kmer=(kmer>>2);
+  }
+  s[k]='\0';
+}
+
+
 // Function to load valid barcodes from a file into a hash table
-khash_t(barcode) *load_barcodes(char *filename) {
-    khash_t(barcode) *h = kh_init(barcode);
+khash_t(bc_hash_t) *load_barcodes(char *filename) {
+    khash_t(bc_hash_t) *hbc = kh_init(bc_hash_t);
     FILE *fp = fopen(filename, "r");
     char line[256];
     int i=0;
     while (fgets(line, sizeof(line), fp)) {
         int ret;
-        khint_t k;
+        khint64_t k;
         line[strcspn(line, "\n")] = 0; // Remove newline character
-        k = kh_put(barcode, h, strdup(line), &ret);
+        k = kh_put(bc_hash_t, hbc, packKmer(line,16), &ret); // Need to add logic for different size BC
 	assert(ret>0); // Making sure the key is not there. No repeats allowed.
-	kh_val(h, k)=i++;  //This is the bc_index for later. 
+	kh_val(hbc, k)=i++;  //This is the bc_index for later. 
     }
     fclose(fp);
-    return h;
+    return hbc;
 }
 
 
@@ -103,8 +168,8 @@ int main(int argc, char *argv[]) {
  
     // Load barcodes
     fprintf(stderr, "Reading the barcode file %s\n", barcode_filename);
-    khash_t(barcode) *barcodes = load_barcodes(barcode_filename);
-    nbcs = kh_size(barcodes);
+    khash_t(bc_hash_t) *hbc = load_barcodes(barcode_filename);
+    nbcs = kh_size(hbc);
     fprintf(stderr, "Number of barcodes is: %d\n", nbcs);
 
     // Open BAM file
@@ -156,11 +221,11 @@ int main(int argc, char *argv[]) {
     float *bc_mat_dlda = (float *)malloc(nsmpl * nbcs * sizeof(float)); //Matrix nbcs rows and nsmpl columns, to store DLDA results.  
 
 
+    int snpcnt=0;
+
     for (int i = 0; i < nbcs; i++) bc_count_snps[i]=0;
     for (int i = 0; i < nbcs; i++) bc_count_umis[i]=0;
     for (int i = 0; i < nbcs*nsmpl; i++) bc_mat_dlda[i]=0.0;
-
-
 
     while (bcf_read(vcf_fp, vcf_hdr, rec) == 0) { // Iterate over VCF records
       if (bcf_unpack(rec, BCF_UN_STR) < 0) continue; // Unpack the current VCF record
@@ -178,22 +243,27 @@ int main(int argc, char *argv[]) {
 
       //Extract dosages from vcf. 
       float *dosages=NULL;
-      float alf=0.0;
+      float alf=1E-5; //Instead of 0 I put this so variance does not become to small and avoid division by zero. 
       int nds_arr = 0;
 
-      //      if(pos>1000000) break;  // for debugging just a small number of SNPs
+      snpcnt++;
+
+      if(snpcnt > 100000) break;  // for debugging just a small number of SNPs
 
       if (bcf_get_format_float(vcf_hdr, rec, "DS", &dosages, &nds_arr) < 0) continue;
 
-      
-      //     fprintf(stderr, "Processing %d %s %d %c %c ",rec->rid, bcf_hdr_id2name(vcf_hdr, rec->rid), rec->pos, ref_allele, alt_allele);      
+      if(snpcnt%1000==1)
+	fprintf(stderr, "Processing %d: %d %s %d %c %c\n",snpcnt,rec->rid, bcf_hdr_id2name(vcf_hdr, rec->rid), rec->pos, ref_allele, alt_allele);      
+
       for (int i = 0; i < nsmpl; i++) {
 	//	fprintf(stderr,"%f ",dosages[i]);
 	alf +=dosages[i];
       }
       alf=alf/(nsmpl*2);
       //fprintf(stderr,"%f \n",alf);
-        
+      //using dosage array to store the DLDA weights. 
+      for (int i = 0; i < nsmpl; i++)    
+	dosages[i] = (dosages[i] - 2.0 * alf) / (SQRT2 * alf * (1-alf));
 
       /* GENOTYPE based DOSAGE */
       /*
@@ -243,7 +313,7 @@ int main(int argc, char *argv[]) {
       // Assuming `barcodes` is a khash_t(barcode)* containing valid CB tags
       // and `reads_hash` is a khash_t(barcode)* used to track unique CB+UB combinations
       khash_t(bc_info_hash_t) *cb_h = kh_init(bc_info_hash_t); // Hash table for counting reads for CB with unique UMI
-      khash_t(barcode) *cb_ub_h = kh_init(barcode); // Hash table for counting unique CB+UB combos
+      khash_t(barcode) *cb_ub_h = kh_init(barcode); // Hash table for counting unique CB+UB combos as STRING think to convert to integer as well
 
       while (sam_itr_next(sam_fp, iter, b) >= 0) {
 	// Extract CB tag (cell barcode)
@@ -255,8 +325,8 @@ int main(int argc, char *argv[]) {
 
     
 	// Check if the CB tag is in the list of valid barcodes
-	khint_t kcb = kh_get(barcode, barcodes, cb);
-	if (kcb == kh_end(barcodes)) continue; // Skip if CB not found among valid barcodes 
+	khint64_t kcb = kh_get(bc_hash_t, hbc, packKmer(cb,16));
+	if (kcb == kh_end(hbc)) continue; // Skip if CB not found among valid barcodes 
     
 	// Follow the CIGAR and get index to the basepair in the read
 	int read_index = find_read_index_for_ref_pos(b, rec->pos);
@@ -279,7 +349,7 @@ int main(int argc, char *argv[]) {
 	k = kh_put(bc_info_hash_t, cb_h, strdup(cb), &ret); // Add it to the hash table
 	assert(ret>=0);
 	if(ret>0){ 
-	  kh_val(cb_h,k).bc_index=kh_val(barcodes,kcb);
+	  kh_val(cb_h,k).bc_index=kh_val(hbc,kcb);
 	  kh_val(cb_h,k).ref_count=0;
 	  kh_val(cb_h,k).alt_count=0;
 	}
@@ -322,10 +392,13 @@ int main(int argc, char *argv[]) {
 	    bc_count_snps[kh_val(cb_h,k).bc_index]++; // Increase number of SNPs seen for this barcode. 
 	    bc_count_umis[kh_val(cb_h,k).bc_index]+= kh_val(cb_h,k).ref_count + kh_val(cb_h,k).alt_count; // Increase number of UMIs in SNPs seen for this barcode. 
 	    
+	    float val = kh_val(cb_h,k).alt_count - alf * bc_count_umis[kh_val(cb_h,k).bc_index];
+
 	    //Loop across individuals for a barcode. 
 	    for(int i = 0; i < nsmpl; ++i)
-	      //The weight could be pre-calculated based on alf and dosage for each sample. 
-	      bc_mat_dlda[ (kh_val(cb_h,k).bc_index * nsmpl) + i ] += ((dosages[i]-alf)/(SQRT2*alf * (1-alf))) * (kh_val(cb_h,k).alt_count - alf);
+	      //The weight could be pre-calculated based on alf and dosage for each sample. dosage becomes the wight
+	      // weigths: dosage[i] = ((dosages[i] - 2 * alf) / (SQRT2 * alf * (1-alf)))
+	      bc_mat_dlda[ (kh_val(cb_h,k).bc_index * nsmpl) + i ] += dosages[i] * val;
 	  }
       
       // Clear the reads hash table for the next SNP
@@ -341,7 +414,7 @@ int main(int argc, char *argv[]) {
 
       // Output to file if there are reads covering the SNP
       if (ref_count > 0 || alt_count > 0) {
-        printf("++%s\t%d\t%s\t%f\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, alf, ref_count, alt_count);
+        //printf("++%s\t%d\t%s\t%f\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, alf, ref_count, alt_count);
 	//        fprintf(stderr,"%s\t%d\t%s\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, ref_count, alt_count);
         // You may want to write this information to a file instead of printing it
       }
@@ -380,7 +453,7 @@ int main(int argc, char *argv[]) {
     hts_idx_destroy(bam_idx);
     bam_hdr_destroy(bam_hdr);
     sam_close(sam_fp);
-    kh_destroy(barcode, barcodes);
+    kh_destroy(bc_hash_t, hbc);
 
     return 0;
 }
