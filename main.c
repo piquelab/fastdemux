@@ -12,6 +12,8 @@
 KHASH_MAP_INIT_STR(barcode,int)
 
 #define SQRT2 1.41421356237
+#define BAM_BUFF_SIZE 6
+#define OMP_THREADS 6
 
 
 // Need to make a new hash table with values that contain info to store barcode or index to bc, 
@@ -212,7 +214,7 @@ int main(int argc, char *argv[]) {
     int nbcs=0;
 
 
-    omp_set_num_threads(1); //Adjust this to env variable.... or option
+    omp_set_num_threads(OMP_THREADS); //Adjust this to env variable.... or option
 
 
  
@@ -302,7 +304,7 @@ int main(int argc, char *argv[]) {
 
       snpcnt++;
 
-      if(snpcnt > 20000) break;  // for debugging just a small number of SNPs
+      if(snpcnt > 100000) break;  // for debugging just a small number of SNPs
 
       if (bcf_get_format_float(vcf_hdr, rec, "DS", &dosages, &nds_arr) < 0) continue;
 
@@ -365,13 +367,20 @@ int main(int argc, char *argv[]) {
       khash_t(bc_info_hash_t) *cb_h = kh_init(bc_info_hash_t); // Hash table for counting reads for CB with unique UMI
       khash_t(barcode) *cb_ub_h = kh_init(barcode); // Hash table for counting unique CB+UB combos as STRING think to convert to integer as well
 
+
       
-      #pragma omp parallel
-      {
-      bam1_t *b = bam_init1(); // Initialize a container for a BAM record.
-      while (sam_itr_next(sam_fp, iter, b) >= 0) {
+      bam1_t *b[BAM_BUFF_SIZE];
+      int j=0;
+      for(j=0;j<BAM_BUFF_SIZE; j++)
+	b[j] = bam_init1(); // Initialize a container for a BAM record.
+      for(j=0;j<BAM_BUFF_SIZE; j++)
+	if(sam_itr_next(sam_fp, iter, b[j])<0) break;
+    
+#pragma omp parallel for schedule(dynamic)
+      for(int jj=0;jj<j;jj++){
+	//while (sam_itr_next(sam_fp, iter, b) >= 0) {
 	// Extract CB tag (cell barcode)
-	uint8_t *cb_ptr = bam_aux_get(b, "CB");
+	uint8_t *cb_ptr = bam_aux_get(b[jj], "CB");
 	if (cb_ptr==NULL) continue; // Skip if no CB tag
 	char* cb = bam_aux2Z(cb_ptr); // Convert to string
 	khint_t k;
@@ -383,11 +392,11 @@ int main(int argc, char *argv[]) {
 	if (kcb == kh_end(hbc)) continue; // Skip if CB not found among valid barcodes 
 
 	// Follow the CIGAR and get index to the basepair in the read
-	int read_index = find_read_index_for_ref_pos(b, rec->pos);
+	int read_index = find_read_index_for_ref_pos(b[jj], rec->pos);
 	if (read_index < 0) continue; // Skip if the position is not covered by the read
   
 	// Extract UB tag (unique molecular identifier)
-	uint8_t *ub_ptr = bam_aux_get(b, "UB");
+	uint8_t *ub_ptr = bam_aux_get(b[jj], "UB");
 	char ub[100]; // Assuming UB won't exceed this length
 	if (ub_ptr) strcpy(ub, bam_aux2Z(ub_ptr)); // Convert to string if present
 	else strcpy(ub, ""); // Use an empty string if no UB tag
@@ -417,7 +426,7 @@ int main(int argc, char *argv[]) {
 	if (ret>=0) { // This is a new, unique CB+UB combination
 	  //  I could do majority voting for multiple cominations, but I will pick the first one for now. 
         
-	  uint8_t *seq = bam_get_seq(b); // Get the sequence
+	  uint8_t *seq = bam_get_seq(b[jj]); // Get the sequence
 	  // Get base at the read's position corresponding to the SNP
 	  char base = seq_nt16_str[bam_seqi(seq, read_index)]; 
 
@@ -430,12 +439,14 @@ int main(int argc, char *argv[]) {
 	    alt_count++;
 	    kh_val(cb_h,k).alt_count++; 
 	  }
-	}
+	}// if ret
 	}//omp critical
-      }
-      bam_destroy1(b); // Clean up BAM record container
-      }//pragma parallel 
+      }//For omp
+      for(int jj=0;jj<BAM_BUFF_SIZE;jj++)
+	bam_destroy1(b[jj]); // Clean up BAM record container
+      //}//pragma parallel 
      
+      //I could use a parallel here too, perhaps. Barcodes are independent. 
       for (khint_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
 	if (kh_exist(cb_h, k))            // test if a bucket contains data
           if ((kh_val(cb_h,k).ref_count > 0) || (kh_val(cb_h,k).alt_count > 0)) {
