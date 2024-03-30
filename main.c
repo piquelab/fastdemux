@@ -5,6 +5,9 @@
 #include <htslib/faidx.h>
 #include "khash.h"
 
+
+#include <omp.h>
+
 // Define the hash table for storing barcodes (CB tags) with an index to array
 KHASH_MAP_INIT_STR(barcode,int)
 
@@ -47,7 +50,6 @@ int encodeACGT(char c){
   }
 }
 
-/*
 unsigned long int packKmer(char *s,int k){
   int Base,j;
   unsigned long int kmer=0;
@@ -62,7 +64,7 @@ unsigned long int packKmer(char *s,int k){
   return kmer;
 }
 
-*/
+/*
 unsigned long int packKmer(char *s, int k) {
   static const int encoding[128] = {
     ['A'] = 0, ['C'] = 1, ['G'] = 2, ['T'] = 3,
@@ -78,7 +80,7 @@ unsigned long int packKmer(char *s, int k) {
   }
   return kmer;
 }
-
+*/
 
 void unPackKmer(unsigned long int kmer,int k,char *s){
   int j;
@@ -112,6 +114,7 @@ khash_t(bc_hash_t) *load_barcodes(char *filename) {
 
 // Function to find the read sequence index corresponding to a reference position
 // based on the CIGAR string of the alignment. Returns -1 if the position is not covered.
+/* 
 int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
   uint32_t *cigar = bam_get_cigar(aln);
   int read_pos = 0; // Position in the read
@@ -150,6 +153,48 @@ int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
   return -1; // Reference position is not covered by the read
 }
 
+*/
+int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
+  uint32_t *cigar = bam_get_cigar(aln);
+  int read_pos = 0; // Position in the read
+  int ref_pos_aligned = aln->core.pos; // Aligned position in the reference
+
+  for (uint32_t i = 0; i < aln->core.n_cigar; ++i) {
+    int op = cigar[i] & BAM_CIGAR_MASK;
+    int len = cigar[i] >> BAM_CIGAR_SHIFT;
+
+    // Optimization for deletion and reference skip
+    if ((op == BAM_CDEL || op == BAM_CREF_SKIP) && ref_pos_aligned + len > ref_pos) {
+      return -1; // Reference position falls within a deletion or skip
+    }
+
+    switch (op) {
+    case BAM_CMATCH:
+    case BAM_CEQUAL:
+    case BAM_CDIFF:
+      if (ref_pos_aligned + len > ref_pos) {
+	return read_pos + (ref_pos - ref_pos_aligned);
+      }
+      read_pos += len;
+      ref_pos_aligned += len;
+      break;
+    case BAM_CINS:
+    case BAM_CSOFT_CLIP:
+      read_pos += len;
+      break;
+    case BAM_CDEL:
+    case BAM_CREF_SKIP:
+      ref_pos_aligned += len;
+      break;
+      // Other CIGAR operations are not considered here
+    default:
+      break;
+    }
+  }
+  return -1; // Reference position is not covered by the read
+}
+
+
 
 
 // Main function to process BAM and VCF files
@@ -165,6 +210,11 @@ int main(int argc, char *argv[]) {
     char *output_filename = argv[4];
 
     int nbcs=0;
+
+
+    omp_set_num_threads(1); //Adjust this to env variable.... or option
+
+
  
     // Load barcodes
     fprintf(stderr, "Reading the barcode file %s\n", barcode_filename);
@@ -179,6 +229,10 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to open BAM file %s\n", bam_filename);
         return 1;
     }
+
+    // multithreaded for sam, does not seem to make it faster, but slower
+    //    hts_set_threads(sam_fp, 6); // 6 threads?
+
     bam_hdr_t *bam_hdr = sam_hdr_read(sam_fp);
     hts_idx_t *bam_idx = sam_index_load(sam_fp, bam_filename); // Load BAM index
     if (bam_idx == NULL) {
@@ -186,7 +240,7 @@ int main(int argc, char *argv[]) {
         sam_close(sam_fp);
         return 1;
     }
-   
+
 
     // Open VCF file
     fprintf(stderr, "Open VCF file %s\n", vcf_filename);
@@ -248,7 +302,7 @@ int main(int argc, char *argv[]) {
 
       snpcnt++;
 
-      if(snpcnt > 100000) break;  // for debugging just a small number of SNPs
+      if(snpcnt > 20000) break;  // for debugging just a small number of SNPs
 
       if (bcf_get_format_float(vcf_hdr, rec, "DS", &dosages, &nds_arr) < 0) continue;
 
@@ -304,35 +358,34 @@ int main(int argc, char *argv[]) {
       // Setup pileup
       hts_itr_t *iter = sam_itr_queryi(bam_idx, rec->rid, rec->pos, rec->pos + 1);
       if (iter != NULL){
-	khint_t k;
+
       //           fprintf(stderr,"iter not null\n");
-
-
-      bam1_t *b = bam_init1(); // Initialize a container for a BAM record.
-
       // Assuming `barcodes` is a khash_t(barcode)* containing valid CB tags
       // and `reads_hash` is a khash_t(barcode)* used to track unique CB+UB combinations
       khash_t(bc_info_hash_t) *cb_h = kh_init(bc_info_hash_t); // Hash table for counting reads for CB with unique UMI
       khash_t(barcode) *cb_ub_h = kh_init(barcode); // Hash table for counting unique CB+UB combos as STRING think to convert to integer as well
 
+      
+      #pragma omp parallel
+      {
+      bam1_t *b = bam_init1(); // Initialize a container for a BAM record.
       while (sam_itr_next(sam_fp, iter, b) >= 0) {
 	// Extract CB tag (cell barcode)
 	uint8_t *cb_ptr = bam_aux_get(b, "CB");
 	if (cb_ptr==NULL) continue; // Skip if no CB tag
 	char* cb = bam_aux2Z(cb_ptr); // Convert to string
+	khint_t k;
 
 	//        fprintf(stderr,"%s\n",cb);
-
     
 	// Check if the CB tag is in the list of valid barcodes
 	khint64_t kcb = kh_get(bc_hash_t, hbc, packKmer(cb,16));
 	if (kcb == kh_end(hbc)) continue; // Skip if CB not found among valid barcodes 
-    
+
 	// Follow the CIGAR and get index to the basepair in the read
 	int read_index = find_read_index_for_ref_pos(b, rec->pos);
 	if (read_index < 0) continue; // Skip if the position is not covered by the read
-
-
+  
 	// Extract UB tag (unique molecular identifier)
 	uint8_t *ub_ptr = bam_aux_get(b, "UB");
 	char ub[100]; // Assuming UB won't exceed this length
@@ -346,6 +399,9 @@ int main(int argc, char *argv[]) {
     
 	// Check if we have already processed this CB
 	int ret=0; 
+
+	#pragma omp critical
+	{
 	k = kh_put(bc_info_hash_t, cb_h, strdup(cb), &ret); // Add it to the hash table
 	assert(ret>=0);
 	if(ret>0){ 
@@ -354,7 +410,6 @@ int main(int argc, char *argv[]) {
 	  kh_val(cb_h,k).alt_count=0;
 	}
 	// only if unique UMI	  kh_val(cb_h,k)++;	
-
 
 	// Check if we have already processed this CB+UB combination
 	int k2; 
@@ -376,9 +431,12 @@ int main(int argc, char *argv[]) {
 	    kh_val(cb_h,k).alt_count++; 
 	  }
 	}
+	}//omp critical
       }
       bam_destroy1(b); // Clean up BAM record container
-      for (k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
+      }//pragma parallel 
+     
+      for (khint_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
 	if (kh_exist(cb_h, k))            // test if a bucket contains data
           if ((kh_val(cb_h,k).ref_count > 0) || (kh_val(cb_h,k).alt_count > 0)) {
 	    // If we want to write a pileup. 

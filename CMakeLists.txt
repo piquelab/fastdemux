@@ -4,6 +4,9 @@ project(fastdemux)
 # Set C standard
 set(CMAKE_C_STANDARD 99)
 
+find_package(OpenMP REQUIRED)
+
+
 # Include directories for htslib and klib
 include_directories(${CMAKE_SOURCE_DIR}/klib)
 
@@ -20,5 +23,5 @@ link_directories(/wsu/el7/groups/piquelab/samtools/1.11/lib)
 add_executable(${PROJECT_NAME} main.c)
 
 # Link htslib
-target_link_libraries(${PROJECT_NAME} hts)
+target_link_libraries(${PROJECT_NAME} PUBLIC hts OpenMP::OpenMP_C)
 
