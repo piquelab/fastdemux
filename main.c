@@ -12,7 +12,7 @@
 KHASH_MAP_INIT_STR(barcode,int)
 
 #define SQRT2 1.41421356237
-#define BAM_BUFF_SIZE 6
+#define BAM_BUFF_SIZE 24
 #define OMP_THREADS 6
 
 
@@ -373,9 +373,13 @@ int main(int argc, char *argv[]) {
       int j=0;
       for(j=0;j<BAM_BUFF_SIZE; j++)
 	b[j] = bam_init1(); // Initialize a container for a BAM record.
+
+      while(1){
       for(j=0;j<BAM_BUFF_SIZE; j++)
 	if(sam_itr_next(sam_fp, iter, b[j])<0) break;
     
+      if(j==0)
+	break;
 #pragma omp parallel for schedule(dynamic)
       for(int jj=0;jj<j;jj++){
 	//while (sam_itr_next(sam_fp, iter, b) >= 0) {
@@ -442,6 +446,7 @@ int main(int argc, char *argv[]) {
 	}// if ret
 	}//omp critical
       }//For omp
+      }//while(1)
       for(int jj=0;jj<BAM_BUFF_SIZE;jj++)
 	bam_destroy1(b[jj]); // Clean up BAM record container
       //}//pragma parallel 
