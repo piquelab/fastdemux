@@ -12,7 +12,7 @@
 KHASH_MAP_INIT_STR(barcode,int)
 
 #define SQRT2 1.41421356237
-#define BAM_BUFF_SIZE 24
+#define BAM_BUFF_SIZE 3600
 #define OMP_THREADS 6
 
 
@@ -28,13 +28,13 @@ typedef struct {
 } bc_info_t;
 
 // Define the hash map type
-KHASH_MAP_INIT_STR(bc_info_hash_t, bc_info_t)
+KHASH_MAP_INIT_INT(bc_info_hash_t, bc_info_t)
 
 
 // Define the hash table for storing barcodes (CB tags) with an index to array, 
-KHASH_MAP_INIT_INT64(bc_hash_t,int) //converting bc to integer, 32 bits should be enough but usign 64 for longer BC.
+KHASH_MAP_INIT_INT(bc_hash_t,int) //converting bc to integer, 32 bits should be enough but usign 64 for longer BC.
 
-
+/*
 //encodes A,C,G,T in binary 00, 01, 10, 11
 int encodeACGT(char c){
   c=c&0xDF; // 11011111 sets letter to uppercase
@@ -65,8 +65,9 @@ unsigned long int packKmer(char *s,int k){
   }
   return kmer;
 }
+*/
 
-/*
+
 unsigned long int packKmer(char *s, int k) {
   static const int encoding[128] = {
     ['A'] = 0, ['C'] = 1, ['G'] = 2, ['T'] = 3,
@@ -82,7 +83,7 @@ unsigned long int packKmer(char *s, int k) {
   }
   return kmer;
 }
-*/
+
 
 void unPackKmer(unsigned long int kmer,int k,char *s){
   int j;
@@ -103,7 +104,7 @@ khash_t(bc_hash_t) *load_barcodes(char *filename) {
     int i=0;
     while (fgets(line, sizeof(line), fp)) {
         int ret;
-        khint64_t k;
+        khint_t k;
         line[strcspn(line, "\n")] = 0; // Remove newline character
         k = kh_put(bc_hash_t, hbc, packKmer(line,16), &ret); // Need to add logic for different size BC
 	assert(ret>0); // Making sure the key is not there. No repeats allowed.
@@ -156,6 +157,7 @@ int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
 }
 
 */
+
 int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
   uint32_t *cigar = bam_get_cigar(aln);
   int read_pos = 0; // Position in the read
@@ -213,7 +215,7 @@ int main(int argc, char *argv[]) {
 
     int nbcs=0;
 
-
+    
     omp_set_num_threads(OMP_THREADS); //Adjust this to env variable.... or option
 
 
@@ -233,7 +235,7 @@ int main(int argc, char *argv[]) {
     }
 
     // multithreaded for sam, does not seem to make it faster, but slower
-    //    hts_set_threads(sam_fp, 6); // 6 threads?
+    //hts_set_threads(sam_fp, 6); // 6 threads?
 
     bam_hdr_t *bam_hdr = sam_hdr_read(sam_fp);
     hts_idx_t *bam_idx = sam_index_load(sam_fp, bam_filename); // Load BAM index
@@ -304,7 +306,7 @@ int main(int argc, char *argv[]) {
 
       snpcnt++;
 
-      if(snpcnt > 100000) break;  // for debugging just a small number of SNPs
+      if(snpcnt > 20000) break;  // for debugging just a small number of SNPs
 
       if (bcf_get_format_float(vcf_hdr, rec, "DS", &dosages, &nds_arr) < 0) continue;
 
@@ -352,11 +354,7 @@ int main(int argc, char *argv[]) {
       free(gt_arr);
       */
 
-
-
-
       //Need to chr are the same 
-
       // Setup pileup
       hts_itr_t *iter = sam_itr_queryi(bam_idx, rec->rid, rec->pos, rec->pos + 1);
       if (iter != NULL){
@@ -367,8 +365,6 @@ int main(int argc, char *argv[]) {
       khash_t(bc_info_hash_t) *cb_h = kh_init(bc_info_hash_t); // Hash table for counting reads for CB with unique UMI
       khash_t(barcode) *cb_ub_h = kh_init(barcode); // Hash table for counting unique CB+UB combos as STRING think to convert to integer as well
 
-
-      
       bam1_t *b[BAM_BUFF_SIZE];
       int j=0;
       for(j=0;j<BAM_BUFF_SIZE; j++)
@@ -380,7 +376,8 @@ int main(int argc, char *argv[]) {
     
       if(j==0)
 	break;
-#pragma omp parallel for schedule(dynamic)
+      //schedule(dynamic)
+#pragma omp parallel for 
       for(int jj=0;jj<j;jj++){
 	//while (sam_itr_next(sam_fp, iter, b) >= 0) {
 	// Extract CB tag (cell barcode)
@@ -389,15 +386,15 @@ int main(int argc, char *argv[]) {
 	char* cb = bam_aux2Z(cb_ptr); // Convert to string
 	khint_t k;
 
-	//        fprintf(stderr,"%s\n",cb);
-    
-	// Check if the CB tag is in the list of valid barcodes
-	khint64_t kcb = kh_get(bc_hash_t, hbc, packKmer(cb,16));
-	if (kcb == kh_end(hbc)) continue; // Skip if CB not found among valid barcodes 
-
 	// Follow the CIGAR and get index to the basepair in the read
 	int read_index = find_read_index_for_ref_pos(b[jj], rec->pos);
 	if (read_index < 0) continue; // Skip if the position is not covered by the read
+
+	unsigned long int kmer=packKmer(cb,16);
+	// Check if the CB tag is in the list of valid barcodes
+	khint_t kcb = kh_get(bc_hash_t, hbc, kmer);
+	if (kcb == kh_end(hbc)) continue; // Skip if CB not found among valid barcodes 
+
   
 	// Extract UB tag (unique molecular identifier)
 	uint8_t *ub_ptr = bam_aux_get(b[jj], "UB");
@@ -413,20 +410,24 @@ int main(int argc, char *argv[]) {
 	// Check if we have already processed this CB
 	int ret=0; 
 
-	#pragma omp critical
+#pragma omp critical
 	{
-	k = kh_put(bc_info_hash_t, cb_h, strdup(cb), &ret); // Add it to the hash table
+	k = kh_put(bc_info_hash_t, cb_h, kmer , &ret); // Add it to the hash table
+	
 	assert(ret>=0);
 	if(ret>0){ 
 	  kh_val(cb_h,k).bc_index=kh_val(hbc,kcb);
 	  kh_val(cb_h,k).ref_count=0;
 	  kh_val(cb_h,k).alt_count=0;
 	}
+	}
 	// only if unique UMI	  kh_val(cb_h,k)++;	
 
 	// Check if we have already processed this CB+UB combination
-	int k2; 
-	k2 = kh_put(barcode, cb_ub_h, strdup(cb_ub_key), &ret);
+#pragma omp critical
+	{
+	int k2 = kh_put(barcode, cb_ub_h, strdup(cb_ub_key), &ret);
+	}
 	if (ret>=0) { // This is a new, unique CB+UB combination
 	  //  I could do majority voting for multiple cominations, but I will pick the first one for now. 
         
@@ -437,21 +438,25 @@ int main(int argc, char *argv[]) {
 	  // Assuming ref_allele and alt_allele are char variables holding the reference and alternate alleles respectively
 	  if (base == ref_allele) { 
 	    ref_count++;
+#pragma omp critical
 	    kh_val(cb_h,k).ref_count++; 
 	  }
 	  else if (base == alt_allele) { 
 	    alt_count++;
+#pragma omp critical
 	    kh_val(cb_h,k).alt_count++; 
 	  }
 	}// if ret
-	}//omp critical
-      }//For omp
+	    //	}//omp critical
+       }//For omp
       }//while(1)
+
       for(int jj=0;jj<BAM_BUFF_SIZE;jj++)
 	bam_destroy1(b[jj]); // Clean up BAM record container
       //}//pragma parallel 
      
       //I could use a parallel here too, perhaps. Barcodes are independent. 
+#pragma omp parallel for schedule(dynamic)
       for (khint_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
 	if (kh_exist(cb_h, k))            // test if a bucket contains data
           if ((kh_val(cb_h,k).ref_count > 0) || (kh_val(cb_h,k).alt_count > 0)) {
