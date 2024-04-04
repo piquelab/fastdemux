@@ -310,15 +310,17 @@ int main(int argc, char *argv[]) {
 
       if (bcf_get_format_float(vcf_hdr, rec, "DS", &dosages, &nds_arr) < 0) continue;
 
-      if(snpcnt%1000==1)
-	fprintf(stderr, "Processing %d: %d %s %d %c %c\n",snpcnt,rec->rid, bcf_hdr_id2name(vcf_hdr, rec->rid), rec->pos, ref_allele, alt_allele);      
-
       for (int i = 0; i < nsmpl; i++) {
 	//	fprintf(stderr,"%f ",dosages[i]);
 	alf +=dosages[i];
       }
       alf=alf/(nsmpl*2);
-      //fprintf(stderr,"%f \n",alf);
+
+      if(snpcnt%1000==1)
+	fprintf(stderr, "Processing %d: %d %s %d %c %c %f\n",snpcnt,rec->rid, bcf_hdr_id2name(vcf_hdr, rec->rid), rec->pos, ref_allele, alt_allele,alf);      
+
+      if(alf * (1-alf) > 0.2) continue; 
+
       //using dosage array to store the DLDA weights. 
       for (int i = 0; i < nsmpl; i++)    
 	dosages[i] = (dosages[i] - 2.0 * alf) / (SQRT2 * alf * (1-alf));
