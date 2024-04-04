@@ -1,0 +1,2 @@
+./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+time ./fastdemux ../../possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
