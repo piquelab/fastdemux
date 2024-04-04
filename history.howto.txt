@@ -1,0 +1,1000 @@
+ 1097  emacs ../main.c 
+ 1098  make
+ 1099  emacs ../main.c 
+ 1100  make
+ 1101  emacs ../main.c 
+ 1102  make
+ 1103  ./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz) out.txt
+ 1104  fg
+ 1105  emacs ../main.c 
+ 1106  make
+ 1107  ./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz) out.txt
+ 1108  emacs ../main.c 
+ 1109  ./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz) out.txt
+ 1110  make
+ 1111  emacs ../main.c 
+ 1112  make
+ 1113  ./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz) out.txt
+ 1114  emacs ../main.c 
+ 1115  clear
+ 1116  ./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz) out.txt
+ 1117  make
+ 1118  ./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz) out.txt
+ 1119  emacs ../main.c 
+ 1120  make
+ 1121  ./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz) out.txt
+ 1122  make
+ 1123  ./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz) out.txt
+ 1124  emacs ../main.c 
+ 1125  make
+ 1126  ./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz) out.txt
+ 1127  emacs ../main.c 
+ 1128  mkae
+ 1129  make
+ 1130  ./fastdemux ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz) out.txt
+ 1131  emacs Makefile 
+ 1132  ls
+ 1133  cat test.sh 
+ 1134  cd ../
+ 1135  ls
+ 1136  cd ../
+ 1137  ls
+ 1138  mkdir fastdemux_gemini
+ 1139  cd fastdemux_gemini/
+ 1140  ls
+ 1141  git clone git@github.com:attractivechaos/klib.git
+ 1142  cp ../fastdemux_chatgtp/CMakeLists.txt ./
+ 1143  cp ../fastdemux_chatgtp/build/test.sh ./
+ 1144  cp ../fastdemux_chatgtp/main.c ./
+ 1145  cat > main.c 
+ 1146  emacs main.c 
+ 1147  mkdir build
+ 1148  cd build/
+ 1149  cmake ..
+ 1150  ls
+ 1151  make
+ 1152  ls
+ 1153  make
+ 1154  emacs ../main.c
+ 1155  ls
+ 1156  make
+ 1157  emacs ../CMakeLists.txt 
+ 1158  ls
+ 1159  make
+ 1160  pwd
+ 1161  cat ../../fastdemux_chatgtp/CMakeLists.txt
+ 1162  cat ../../fastdemux_chatgtp/main.c | head
+ 1163  pwd
+ 1164  emacs ../main.c
+ 1165  cat ../../fastdemux_chatgtp/main.c | head
+ 1166  emacs ../main.c
+ 1167  jobs
+ 1168  fg
+ 1169  make
+ 1170  ls
+ 1171  pwd
+ 1172  cd ../
+ 1173  cd ../fastdemux_chatgtp/
+ 1174  ls
+ 1175  cd build/
+ 1176  ls
+ 1177  source test.sh 
+ 1178  emacs ../main.c
+ 1179  cp ../main.c ../main.c.bk1
+ 1180  emacs ../main.c
+ 1181  make
+ 1182  emacs ../main.c
+ 1183* 
+ 1184  emacs ../main.c
+ 1185  make
+ 1186  ls
+ 1187  source test.sh 
+ 1188  emacs ../main.c
+ 1189  make
+ 1190  emacs ../main.c
+ 1191  make
+ 1192  emacs ../main.c
+ 1193  make
+ 1194  source test.sh 
+ 1195  emacs ../main.c
+ 1196  make
+ 1197  source test.sh 
+ 1198  emacs ../main.c
+ 1199  fg
+ 1200  make
+ 1201  source test.sh 
+ 1202  ls
+ 1203  emacs ../main.c
+ 1204  make
+ 1205  source test.sh 
+ 1206  emacs ../main.c
+ 1207  fg
+ 1208  source test.sh 
+ 1209  cat test.sh 
+ 1210  zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/features.tsv.gz | head
+ 1211  zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | head
+ 1212  ls
+ 1213  emacs test.sh 
+ 1214  history | tail
+ 1215  emacs test.sh 
+ 1216  make
+ 1217  source test.sh 
+ 1218  jobs
+ 1219  fg
+ 1220  source test.sh
+ 1221  fg
+ 1222  emacs test.sh 
+ 1223  emacs ../main.c
+ 1224  make
+ 1225  source test.sh
+ 1226  segmentation fault. 
+ 1227  fg
+ 1228  jobs
+ 1229  make
+ 1230  source test.sh
+ 1231  cat ../main.c
+ 1232  fg
+ 1233  ls
+ 1234  pwd
+ 1235  fg
+ 1236  make
+ 1237  source test.sh
+ 1238  fg
+ 1239  make
+ 1240  source test.sh
+ 1241  fg
+ 1242  make 
+ 1243  source test.sh
+ 1244  samtools view -r 1:62777 ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam 
+ 1245  samtools view --help
+ 1246* samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam 
+ 1247* history 
+ 1248  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam 1:62777
+ 1249  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam 1:62777 --help
+ 1250  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam 1:62776-62777
+ 1251  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam 1:62776-62777 | cut -f 3-4
+ 1252  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam 1:62776-62777 
+ 1253  samtools mpileup
+ 1254  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:62776-62777 
+ 1255  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:62776-62778 
+ 1256  source test.sh
+ 1257  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:90051-90051
+ 1258  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:90051-90052
+ 1259  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:90050-90052
+ 1260  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:14599-14600
+ 1261  source test.sh
+ 1262  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:14930-14931
+ 1263  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:15211-15212
+ 1264  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:90051-90052
+ 1265  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:62777-62778
+ 1266  samtools pileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:62777-62778
+ 1267  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:62777-62778
+ 1268  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:62777-62778
+ 1269  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:62777-62778 | cut -f 20-21
+ 1270  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:62777-62778 | cut -f 21-22
+ 1271  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:62777-62778 | cut -f 21-22 | grep -w -f <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz)
+ 1272  source test.sh
+ 1273  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:62777-62778
+ 1274  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:14930-14931
+ 1275  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:14930-14931 | cut -f 21-22 | grep -w -f <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz)
+ 1276  ls
+ 1277  jobs
+ 1278  emacs ../main.c
+ 1279  make
+ 1280  source test.sh
+ 1281  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:122872-122873 | cut -f 21-22 | grep -w -f <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz)
+ 1282  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:565006-565007 | cut -f 21-22 | grep -w -f <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz)
+ 1283  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:565006-565007
+ 1284  ##samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:122872-122873 | cut -f 21-22 | grep -w -f <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz)
+ 1285  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:122872-122873
+ 1286  ##samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:122872-122873 | cut -f 21-22 | grep -w -f <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz)
+ 1287  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:122872-122873 | cut -f 21-22 | grep -w -f <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz)
+ 1288  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:122872-122873 | cut -f 21-22 | grep -w -f <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) | sort | uniq
+ 1289  source test.sh
+ 1290  fg
+ 1291  make
+ 1292  source test.sh > test.txt &
+ 1293  htop
+ 1294  fg
+ 1295  jobs
+ 1296  fg %2
+ 1297  time source test.sh > test.txt &
+ 1298  htop
+ 1299  ls
+ 1300  ls -haslt
+ 1301  less test.
+ 1302  less test.txt | wc -l'
+ 1303  less test.txt | wc -l
+ 1304  jobs
+ 1305  tail test.txt 
+ 1306  less test.txt | wc -l
+ 1307  ls
+ 1308  emacs ../main.c
+ 1309  fg
+ 1310  emacs ../main.c
+ 1311  make
+ 1312  emacs ../main.c
+ 1313  make
+ 1314  time source test.sh | head
+ 1315  jobs
+ 1316  emacs ../main.c
+ 1317  make
+ 1318  ls
+ 1319  cat test.sh
+ 1320  source test.sh
+ 1321* 
+ 1322  bcftools query 
+ 1323  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %GT]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565697
+ 1324  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %GT]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565698
+ 1325  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %GT]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565696
+ 1326  bcftools view ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565696
+ 1327  bcftools view -H ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565696
+ 1328  bcftools view -H ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz 1:565696
+ 1329  bcftools view ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz 1:565696
+ 1330  bcftools view
+ 1331  bcftools view ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz 1:565696-565696
+ 1332  bcftools view ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz 1:565696-565697
+ 1333  bcftools view ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz 1:565696-565697 | less
+ 1334  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565696
+ 1335  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565697
+ 1336  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565698
+ 1337  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565697
+ 1338  source test.sh
+ 1339  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565697
+ 1340  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565696
+ 1341  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565695
+ 1342  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565697
+ 1343  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:565591
+ 1344  source test.sh
+ 1345  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:567940
+ 1346  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %GT]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:567940
+ 1347  emacs ../main.c
+ 1348  jobs
+ 1349  fg
+ 1350  make
+ 1351  fg
+ 1352  make
+ 1353  source test.sh
+ 1354  fg
+ 1355  make
+ 1356  source test.sh
+ 1357  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:62777
+ 1358  source test.sh
+ 1359  fg
+ 1360  make
+ 1361  source test.sh
+ 1362  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT:[ %DS]\n' ../../../counts_cellranger_2023-05-27/genotypes/combined.posG9.reheader.vcf.gz -r 1:949925
+ 1363  fg
+ 1364  make
+ 1365  source test.sh
+ 1366  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:565006-565006 | cut -f 21-22 | grep -w -f <(zcat ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) | sort | uniq
+ 1367  samtools view ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam  1:565006-565006 
+ 1368  source test.sh
+ 1369  samtools pileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:565006-565006 
+ 1370  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:565006-565006 
+ 1371  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:565005-565007 
+ 1372  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:565591-565591 
+ 1373  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:566792-566792
+ 1374  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:567606-567606
+ 1375  source test.sh
+ 1376  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:122872-122872
+ 1377  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:565006-565006
+ 1378  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:565591-565591
+ 1379  source test.sh
+ 1380  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:568256-568256
+ 1381  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:568256-568256 | cut -f1-5 | sed 's/[<>]//g'
+ 1382  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:568451-568451 | cut -f1-5 | sed 's/[<>]//g'
+ 1383  source test.sh
+ 1384  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:758144-758144 | cut -f1-5 | sed 's/[<>]//g'
+ 1385  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:757936-757936 | cut -f1-5 | sed 's/[<>]//g'
+ 1386  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:756268-756268 | cut -f1-5 | sed 's/[<>]//g'
+ 1387  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:753474-753474 | cut -f1-5 | sed 's/[<>]//g'
+ 1388  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:757936-757936 | cut -f1-5 | sed 's/[<>]//g'
+ 1389  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:758144-758144 | cut -f1-5 | sed 's/[<>]//g'
+ 1390  source test.sh
+ 1391  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:759837-759837 | cut -f1-5 | sed 's/[<>]//g'
+ 1392  samtools mpileup ../../../counts_cellranger_2023-05-27/SCAIP10-PHA/possorted_genome_bam.bam -r 1:758144-758144 | cut -f1-5 | sed 's/[<>]//g'
+ 1393  source test.sh
+ 1394  fg
+ 1395  cd /rs/rs_grp_scaloft/
+ 1396  ls
+ 1397  git clone git@github.com:piquelab/fastdemux.git
+ 1398  cd -
+ 1399  cd /rs/rs_grp_scaloft/fastdemux/
+ 1400  cp /nfs/rprdata/SCAIP-ALOFT2/testpileup/fastdemux_chatgtp/CMakeLists.txt ./
+ 1401  cp /nfs/rprdata/SCAIP-ALOFT2/testpileup/fastdemux_chatgtp/main.c ./
+ 1402  mkdir build
+ 1403  jobs
+ 1404  git remote  /nfs/rprdata/SCAIP-ALOFT2/testpileup/fastdemux_chatgtp/klib/
+ 1405  git clone git@github.com:attractivechaos/klib.git
+ 1406  git status
+ 1407  git add CMakeLists.txt 
+ 1408  git add main.c 
+ 1409  git commit -a -m "adding c-file"
+ 1410  cd -
+ 1411  ls
+ 1412  cd -
+ 1413  ls
+ 1414  git status
+ 1415  cd -
+ 1416  pwd
+ 1417  cd -
+ 1418  cp /nfs/rprdata/SCAIP-ALOFT2/testpileup/fastdemux_chatgtp/build/test.sh ./
+ 1419  ls
+ 1420  cd build/
+ 1421  cmake ..
+ 1422  make 
+ 1423  cat ../test.sh 
+ 1424  ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(scat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1425  samtools view -h ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam
+ 1426  samtools view -H ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam
+ 1427  samtools view -H ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam | less
+ 1428  emacs ../main.c 
+ 1429  make
+ 1430  ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(scat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1431  emacs ../main.c 
+ 1432  fg
+ 1433  make
+ 1434  ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(scat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1435  fg
+ 1436  make
+ 1437  ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(scat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1438  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(scat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1439  fg
+ 1440  make
+ 1441  fg
+ 1442  emacs ../main.c 
+ 1443  make
+ 1444  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(scat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1445  fg
+ 1446  emacs ../main.c 
+ 1447  make
+ 1448  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(scat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1449  fg
+ 1450  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(scat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1451  ##time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(scat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1452  ##time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1453  fg
+ 1454  make
+ 1455  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1456  history > history.howto.txt
+ 1457  grep mpileup history.howto.txt 
+ 1458  tail history
+ 1459  history | tail
+ 1460  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:14599-14600 | cut -f1-5 | sed 's/[<>]//g'
+ 1461  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1462  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:271629-271629 | cut -f1-5 | sed 's/[<>]//g'
+ 1463  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:187527-187527 | cut -f1-5 | sed 's/[<>]//g'
+ 1464  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt
+ 1465  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt > test.txt
+ 1466  bg
+ 1467  jobs
+ 1468  tail test.txt 
+ 1469  jobs
+ 1470  tail test.txt 
+ 1471  cat test.txt | awk '$5>10' | head
+ 1472  cat test.txt | awk '$5>10' | tail
+ 1473  cat test.txt | awk '$5>1' | tail
+ 1474  jobs
+ 1475  tail test.txt 
+ 1476  jobs
+ 1477  emacs ../main.c 
+ 1478  jobs
+ 1479  tail test.txt 
+ 1480  jobs
+ 1481  fg
+ 1482  ls
+ 1483  git status
+ 1484  git diff
+ 1485  git commit -a -m "small changes"
+ 1486  ls
+ 1487  jobs
+ 1488  emacs ../main.c 
+ 1489  make
+ 1490  emacs ../main.c 
+ 1491  fg
+ 1492  make
+ 1493  ls
+ 1494  cat test.txt 
+ 1495  ls
+ 1496  ls ../
+ 1497  source ../test.sh 
+ 1498  bash ../test.sh 
+ 1499  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1500  fg
+ 1501  make
+ 1502  fg
+ 1503  make
+ 1504  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1505  fg
+ 1506  make
+ 1507  fg
+ 1508  make
+ 1509  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1510  fg
+ 1511  make
+ 1512  fg
+ 1513  make
+ 1514  fg
+ 1515  make
+ 1516  fg
+ 1517  make
+ 1518  fg
+ 1519  make
+ 1520  fg
+ 1521  make
+ 1522  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1523  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt | less
+ 1524  fg
+ 1525  make
+ 1526  fg
+ 1527  make
+ 1528  fg
+ 1529  make
+ 1530  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt | less
+ 1531  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:775208-775208 | cut -f1-5 | sed 's/[<>]//g'
+ 1532  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:777382-777382 | cut -f1-5 | sed 's/[<>]//g'
+ 1533  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:764898-764898 | cut -f1-5 | sed 's/[<>]//g'
+ 1534  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:633375-633375 | cut -f1-5 | sed 's/[<>]//g'
+ 1535  fg
+ 1536  make
+ 1537  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:633375-633375 | cut -f1-5 | sed 's/[<>]//g'
+ 1538  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt | less
+ 1539  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1540  fg
+ 1541  make
+ 1542  fg
+ 1543  make
+ 1544  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1545  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:813498-813498 | cut -f1-5 | sed 's/[<>]//g'
+ 1546  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:810809-810809 | cut -f1-5 | sed 's/[<>]//g'
+ 1547  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:812681-812681 | cut -f1-5 | sed 's/[<>]//g'
+ 1548  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:811111-811111 | cut -f1-5 | sed 's/[<>]//g'
+ 1549  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1550  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:818094-818094 | cut -f1-5 | sed 's/[<>]//g'
+ 1551  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:818161-818161 | cut -f1-5 | sed 's/[<>]//g'
+ 1552  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:818954-818954 | cut -f1-5 | sed 's/[<>]//g'
+ 1553  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:818802-818802 | cut -f1-5 | sed 's/[<>]//g'
+ 1554  fg
+ 1555  make
+ 1556  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1557  samtools mpileup ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam -r chr1:821099-821099 | cut -f1-5 | sed 's/[<>]//g'
+ 1558  ls
+ 1559  fg
+ 1560  make
+ 1561  fg
+ 1562  make
+ 1563  fg
+ 1564  make
+ 1565  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1566  fg
+ 1567  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1568  make
+ 1569  fg
+ 1570  make
+ 1571  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1572  fg
+ 1573  make
+ 1574  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1575  ls
+ 1576  ls -halst
+ 1577  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1578  valgrind ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1579  fg
+ 1580  make
+ 1581  valgrind ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1582  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1583  fg
+ 1584  make
+ 1585  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1586  fg
+ 1587  make
+ 1588  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1589  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | wc -l
+ 1590  fg
+ 1591  make
+ 1592  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1593  fg
+ 1594  make
+ 1595  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1596  valgrind --leak-check=full --show-leak-kinds=all -s ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1597  fg
+ 1598  make
+ 1599  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1600  fg
+ 1601  make
+ 1602  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1603  fg
+ 1604  make
+ 1605  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1606  fg
+ 1607  make
+ 1608  fg
+ 1609  make
+ 1610  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1611  fg
+ 1612  make
+ 1613  fg
+ 1614  mkae
+ 1615  make
+ 1616  fg
+ 1617  make
+ 1618  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1619  ls
+ 1620  less out.txt 
+ 1621  ls
+ 1622  less out.txt 
+ 1623  less out.txt | tail
+ 1624  fg
+ 1625  make
+ 1626  git status
+ 1627  git commit -a -m "more advanced state multiple changes"
+ 1628  git push
+ 1629  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1630  ls
+ 1631  fg
+ 1632  make
+ 1633  valgrind --leak-check=full ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1634  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1635  \
+ 1636  ls
+ 1637  less out.dlda.txt 
+ 1638  ls
+ 1639  cat history.howto.txt 
+ 1640  history > history.howto2.txt
+ 1641  ls
+ 1642  mkdir bk
+ 1643  mv out.dlda.txt bk/
+ 1644  mv out.txt bk/
+ 1645  mv test.txt bk/
+ 1646  less bk/out.txt 
+ 1647  ls
+ 1648  less bk/out.dlda.txt | awk 'NR==1' | head
+ 1649  less bk/out.dlda.txt | awk 'NR==1' | tr '\t' '\n' | awk '$1>2000'
+ 1650  less bk/out.dlda.txt | awk 'NR==1' | tr '\t' '\n' | awk '$1>2000{print NR}'
+ 1651  less bk/out.dlda.txt | awk 'NR==1' | tr '\t' '\n' | awk '$1>2000{print NR,$1}'
+ 1652  less bk/out.dlda.txt | awk 'NR==2' | tr '\t' '\n' | awk '$1>2000{print NR,$1}'
+ 1653  less bk/out.dlda.txt | awk 'NR==2' | tr '\t' '\n' | awk '$1>8000{print NR,$1}'
+ 1654  less bk/out.dlda.txt | awk 'NR==2' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 1655  less bk/out.dlda.txt | awk 'NR==1' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 1656  less bk/out.dlda.txt | awk 'NR==2' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 1657  less bk/out.dlda.txt | awk 'NR==3' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 1658  cat history.howto2.txt 
+ 1659  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==20'
+ 1660  less bk/out.dlda.txt | awk 'NR==3' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 1661  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==78'
+ 1662  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==78'
+ 1663  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==3'
+ 1664  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==247'
+ 1665  less bk/out.dlda.txt | awk 'NR==1' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 1666  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==111'
+ 1667  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==1'
+ 1668  head bk/out.txt 
+ 1669  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==2'
+ 1670  less bk/out.dlda.txt | awk 'NR==2' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 1671  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==2'
+ 1672  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==20'
+ 1673  less bk/out.dlda.txt | awk 'NR==4' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 1674  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==4'
+ 1675  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==49'
+ 1676  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==5'
+ 1677  less bk/out.dlda.txt | awk 'NR==5' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 1678  less bk/out.dlda.txt | awk 'NR==5' | tr '\t' '\n' | awk '$1>16000{print NR,$1}'
+ 1679  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==111'
+ 1680  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==5'
+ 1681  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==11'
+ 1682  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==111'
+ 1683  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==6'
+ 1684  less bk/out.dlda.txt | awk 'NR==6' | tr '\t' '\n' | awk '$1>16000{print NR,$1}'
+ 1685  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==6'
+ 1686  head bk/out.txt 
+ 1687  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==7'
+ 1688  less bk/out.dlda.txt | awk 'NR==7' | tr '\t' '\n' | awk '$1>16000{print NR,$1}'
+ 1689  less bk/out.dlda.txt | awk 'NR==7' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 1690  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==91'
+ 1691  ls
+ 1692  jobs
+ 1693  fg
+ 1694  oint the underlying regulatory sequences responsible for gene expression response to specific environmental perturbations.} 
+ 1695  %\paragraph{Predicting gene expression changes.~~} Using the sequence/footprint models and regulatory maps that we obtain on each of the conditions, we will then aim to predict the differences in gene expression levels (both across genes $g$ within a single condition, and across cellular environments $t$). 
+ 1696  %Here we will use a logistic regression approach for predicting genes $g$ with differences in gene expression $Y_{gt}$. As features of the model, we will use the number of chromatin-\emph{cis}-regulatory modules and TF identities in the region surrounding the TSS. When using ENCODE derived TF footprint annotations we have been able to predict some of the gene expression changes and identify relevant factors. \textbf{\emph  Here, taking advantage of condition specific ATAC-seq data we will be able to pinpoint the underlying regulatory sequences responsible for gene expression response to specific environmental perturbations.} 
+ 1697  %% Additionally, we will consider using a more sophisticated deep neural network that will combine the regulatory factors in each CCRM $W_{lt}$  to learn the underlying grammar that directs gene transcriptional response. 
+ 1698  %%    effect / no-effect of each regulatory module on gene expression. Write a bit more.... 
+ 1699  %but we will also use a generalized linear model for quantifying the effect size on gene expression levels %$Y_{gtk}$ that will depend of the regulatory modules $\pi_{mtk}$ in the region $\mathcal N(g)$:
+ 1700  %\begin{eqnarray}
+ 1701  %E\left[Y_{gtk} \right] = \mu_0 + \sum_{m \in \mathcal N (g)} \mu_{m} \pi_{tkm}
+ 1702  %&\text{where}& 
+ 1703  %\pi_{tkm}= P\left(  \mathcal Z_{tkm} | \mathcal D,S_m,T=t,E=k\right) \label{eqn:exprmodules}
+ 1704  %\end{eqnarray}
+ 1705  %To this end, we will use gene expression data publicly available in ENCODE, GTEx and that we have %independently collected (see preliminary results). 
+ 1706  %In our preliminary work, we have addressed i).  To account for the challenges presented in ii) we added a convolutional layer (100bp length for forward `+' and reverse `-' strain) paired with each sequence convolutional filter $Z_{j,k}$ that takes as input the DNase-I cleavage pattern for TF $k$ around that position $j$ for each base pair of the window $W_l$. To resolve boundary conditions we extracted the data from the surrounding windows rather than padding the input. 
+ 1707  %For each window, a matrix $\bm X$ will be constructed to count Tn5 insertion events: each row (1 to 8) will represent a fragment length/strand combination, and each column a specific cleavage site at bp $j$ with respect the window $W_l$ center. 
+ 1708  This will be done
+ 1709  %The main advantage of this hybrid layer compared to a regular convolutional layer is that it can accommodate non-normally distributed count data. 
+ 1710  We will initialize the model without the count data layer, then for each sequence filter $k$ we will pair a ``footprint'' filter (convolutional neural network or CENTIPEDE layer). We will then optimize the weights of this layer and subsequent hidden layers using gradient descent based methods. 
+ 1711  %%Discarded text to be re-used or eliminated. 
+ 1712  %%Specifically, we extended the CENTIPEDE approach to generate a catalog of regulatory sites and binding variants encompassing more than 600 experimental samples from the ENCODE and Roadmap Epigenomics projects with DNase-seq data, and recalibrated sequence motif models for more than 800 TFs. Each annotation is specific for a cell-type or assay and is locally motif-driven. We found 5.8 million genetic variants in footprints, 66\% of which we predict to affect TF binding  \url{genome.grid.wayne.edu/centisnps/}). Experimental validation using  allele-specific hypersensitivity (ASH) reveals that most (97\%) genetic variants in footprinted regulatory regions are indeed silent (Fig. \ref{fig:ASHcentisnps}). In parallel to our work, other studies\cite{Alipanahi2015,Ghandi2014,Zhou2015} have revealed that it is essential to develop a better sequence model to assess which non-coding variants are functional. Importantly, we showed that adding the footprint shape greatly reduces the number of false positives for binding sites that are not really active in any relevant cell-type or tissue. 
+ 1713  %% Move to a different section... 
+ 1714  %%Combining this information with GWAS data revealed that our annotation helps in computationally fine-mapping 86 SNPs in GWAS hit regions with at least a 2-fold increase in the posterior odds of picking the causal SNP (Fig. \ref{fig:fgwas}).
+ 1715  %%The rich meta information provided by our compendium annotation (i.e., the tissue-specificity and the identity of the putative TF binding site being affected) also helps in identifying the underlying mechanism supporting the association. In many cases, the TF identity already strongly suggest an environmental factor and the existence of a GxE-QTN (see more preliminary work in specific aims), which we can explicitly identify with the data we will collect in specific environmental contexts. 
+ 1716  %%\textbf{\emph   Here we propose to develop novel computational methods to predict the regulatory function of non-coding variants in a large number of cellular environments, to validate this function through cASH, cASE and high-throughput reporter assay analysis and to generate a catalog of GxE-QTN that can be used by the scientific community.}
+ 1717  \paragraph{Predicting Transcription Factor Binding Using Deep Learning Methods.~~}
+ 1718  We have developed a deep learning-based method to predict the binding patterns of TFs across six different cell lines from the ENCODE project.  We developed a novel hybrid deep learning convolutional/parametric approach that combines information present in the DNA sequence with chromatin accessibility status at that same genomic coordinate.  The sequence model is based on a convolutional neural network consisting of learnable weights scanned along some input matrix. The chromatin shape model is based on the CENTIPEDE model with additional over-dispersion parameters that can also use the fragment length information in ATAC-seq data.  Our convolutional neural network model is composed of six layers and the output value represents the prior probability of a window being bound by a TF that is used in the CENTIPEDE model. Using this method, we trained a separate model for 20 TF  and cell type combinations with  ChIP-seq peaks.  In nearly every case, this deep learning model outperforms the CENTIPEDE model (AUC $>$0.9). 
+ 1719  %%%%%%%%%%%%%%
+ 1720  %%Miscleanous discarded stuff from AIM3
+ 1721  %%When we fit this model We will use similar principles as in the PEER approach to fit the model, but the key difference we will exploit here is that we will set a prior on the magnitude and sign of $\tau_{kj}$ based on our previous data in which $\alpha_{kn}=1$ for the samples that were exposed to treatment $k$. This is a key novelty, and we can use it also to incorporate cell-type information from single cell experiments in the Human Cell Atlas.  Our approach will also yield more interpretable results than the more blind application of PEER or PCA in eQTLs. \textbf{\emph  More importantly, the latent environmental variable  $\alpha_{kn}$ can be used to formally test for GxE, as described below.} 
+ 1722  %\paragraph{Developing computational tools for integrative analysis incorporating GxE-QTN annotation.~~}
+ 1723  %Current methods, while successful in integrating and co-localizing molecular QTL with GWAS signals, are designed to utilize eQTL information collected at baseline.
+ 1724  %We will develop computational approaches to incorporate GxE-QTNs annotations from the previous aim into eQTL analyses.
+ 1725  ls
+ 1726  emacs ../main.c 
+ 1727  make
+ 1728  fg
+ 1729  make
+ 1730  fg
+ 1731  make
+ 1732  fg
+ 1733  make
+ 1734  history | grep fastdemux
+ 1735  valgrind --tool=callgrind  ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1736  ls
+ 1737  kcachegrind callgrind.out.18302 
+ 1738  qcachegrind callgrind.out.18302 
+ 1739  kcachegrind
+ 1740  ls -haslt 
+ 1741  less callgrind.out.18302 
+ 1742  pwd
+ 1743  ls
+ 1744  head out.txt 
+ 1745  gprof
+ 1746  gprof --help
+ 1747  gcc -pg -o fastdemuxprof ../main.c 
+ 1748  cmake -DCMAKE_C_FLAGS="-pg" -DCMAKE_CXX_FLAGS="-pg" -DCMAKE_EXE_LINKER_FLAGS="-pg" ..
+ 1749  make
+ 1750  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1751  ls
+ 1752  gprof ./fastdemux gmon.out > profiling_analysis.txt
+ 1753  less profiling_analysis.txt 
+ 1754  ls
+ 1755  emacs ../main.c 
+ 1756  fg
+ 1757  make
+ 1758  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1759  emacs ../main.c 
+ 1760  fg
+ 1761  make
+ 1762  fg
+ 1763  make
+ 1764  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1765  fg
+ 1766  make
+ 1767  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1768  gprof ./fastdemux gmon.out > profiling_analysis.txt
+ 1769  less profiling_analysis.txt 
+ 1770  fg
+ 1771  make
+ 1772  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1773  ls
+ 1774  ls -ahslt
+ 1775  qme
+ 1776  ls
+ 1777  fg
+ 1778  make
+ 1779  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1780  history | grep gmon.out 
+ 1781  gprof ./fastdemux gmon.out > profiling_analysis.txt
+ 1782  less profiling_analysis.txt 
+ 1783  fg
+ 1784  less profiling_analysis.txt 
+ 1785  history
+ 1786  ls
+ 1787  history | grep howto
+ 1788  history > history.howto2.txt
+ 1789  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | head
+ 1790  fg
+ 1791  make
+ 1792  fg
+ 1793  make
+ 1794  fg
+ 1795  emacs ../main.c 
+ 1796  make
+ 1797  fg
+ 1798  make
+ 1799  fg
+ 1800  make
+ 1801  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1802  ##45m12.394s
+ 1803  gprof ./fastdemux gmon.out > profiling_analysis.txt
+ 1804  less profiling_analysis.txt 
+ 1805  fg
+ 1806  make
+ 1807  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1808  make
+ 1809  make -O2
+ 1810  mkdir ../Release
+ 1811  cd ../Release/
+ 1812  cmake -DCMAKE_C_FLAGS=-O2 ..
+ 1813  make
+ 1814  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1815  cd - 
+ 1816  gprof ./fastdemux gmon.out > profiling_analysis.txt
+ 1817  less profiling_analysis.txt 
+ 1818  git commit -a -m "Tried to make it faster but no luck."
+ 1819  git push
+ 1820  qme
+ 1821  fg
+ 1822  make
+ 1823  cmake -DCMAKE_C_FLAGS="-pg" -DCMAKE_CXX_FLAGS="-pg" -DCMAKE_EXE_LINKER_FLAGS="-pg" ..
+ 1824  make
+ 1825  fg
+ 1826  make
+ 1827  module av openmp
+ 1828  module load openmpi3/3.1.6
+ 1829  emacs ../CMakeLists.txt 
+ 1830  make
+ 1831  cmake -DCMAKE_C_FLAGS="-pg" -DCMAKE_CXX_FLAGS="-pg" -DCMAKE_EXE_LINKER_FLAGS="-pg" ..
+ 1832  fg
+ 1833  cmake -DCMAKE_C_FLAGS="-pg" -DCMAKE_CXX_FLAGS="-pg" -DCMAKE_EXE_LINKER_FLAGS="-pg" ..
+ 1834  make
+ 1835  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1836  fg
+ 1837  make
+ 1838  fg
+ 1839  make
+ 1840  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1841  fg
+ 1842  make
+ 1843  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1844  fg
+ 1845  make
+ 1846  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1847  fg
+ 1848  make
+ 1849  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1850  fg
+ 1851  make
+ 1852  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1853  gprof ./fastdemux gmon.out > profiling_analysis.txt
+ 1854  less profiling_analysis.txt 
+ 1855  fg
+ 1856  make
+ 1857  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1858  qme
+ 1859  gprof ./fastdemux gmon.out > profiling_analysis.txt
+ 1860  less profiling_analysis.txt 
+ 1861  fg
+ 1862  make
+ 1863  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1864  gprof ./fastdemux gmon.out > profiling_analysis.v0.txt
+ 1865  less profiling_analysis.v0.txt 
+ 1866  cp profiling_analysis.v0.txt profiling_analysis.v1.txt
+ 1867  less profiling_analysis.v1.txt 
+ 1868  less profiling_analysis.v0.txt 
+ 1869  cp profiling_analysis.txt profiling_analysis.v1.txt
+ 1870  less profiling_analysis.v1.txt 
+ 1871  less profiling_analysis.v1.txt | head -n40
+ 1872  less profiling_analysis.v1.txt | head -n30
+ 1873  less profiling_analysis.txt | head -n30
+ 1874  less profiling_analysis.txt | head -n28
+ 1875  less profiling_analysis.txt | head -n25
+ 1876  less profiling_analysis.v0.txt | head -n25
+ 1877  less profiling_analysis.v1.txt | head -n25
+ 1878  fg
+ 1879  make
+ 1880  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1881  make
+ 1882  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1883  make
+ 1884  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1885  make
+ 1886  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1887  make
+ 1888  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1889  make
+ 1890  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1891  qme
+ 1892  make
+ 1893  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1894  make
+ 1895  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1896  make
+ 1897  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1898  make
+ 1899  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1900  make
+ 1901  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1902  make
+ 1903  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1904  make
+ 1905  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1906  make 
+ 1907  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1908  gprof ./fastdemux gmon.out > profiling_analysis_v3.txt
+ 1909  cp out.* out6t100k/
+ 1910  make
+ 1911  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1912* 
+ 1913  cp out.* out1t100k/
+ 1914  diff out1t100k/ out6t100k/
+ 1915  ls
+ 1916  less out1t100k/out.txt | head
+ 1917  less out6t100k/out.txt | head
+ 1918  less out6t100k/out.txt 
+ 1919  less out6t100k/out.txt | tail
+ 1920  less out6t100k/out.txt | awk '$3>0' | head
+ 1921  less out1t100k/out.txt | awk '$3>0' | head
+ 1922  less out1t100k/out.txt | awk '$3>0' | less
+ 1923  make
+ 1924  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1925  make
+ 1926  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1927  cp out.* out6t100k/
+ 1928  cat out6t100k/out.txt | head
+ 1929  make
+ 1930  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1931  cp out.* out12t48and100k/
+ 1932  cat out6t100k/out.txt | head
+ 1933  cat out12t48and100k/ | head
+ 1934  cat out12t48and100k/out.txt | head
+ 1935  make
+ 1936  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1937  ls
+ 1938  cp out.* out1t100k/
+ 1939  cat out12t48and100k/out.txt | head
+ 1940  cat out1t100k/out.txt | head
+ 1941  make
+ 1942  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1943  make
+ 1944  cp out.* out6t360_100k/
+ 1945  mkdir out6t360_100k
+ 1946  cp out.* out6t360_100k/
+ 1947  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1948  fg
+ 1949  ls
+ 1950  ls out6t360_100k/
+ 1951  ls out*
+ 1952  make
+ 1953  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1954  ls
+ 1955  gprof ./fastdemux gmon.out > profiling_analysis_v4.txt
+ 1956  less profiling_analysis_v3.txt
+ 1957  less profiling_analysis_v4.txt 
+ 1958  make
+ 1959  gprof ./fastdemux gmon.out > profiling_analysis_v4.txt
+ 1960  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1961  cd ../Release/
+ 1962  ls 
+ 1963  less CMakeCache.txt 
+ 1964  ls
+ 1965  cat cmake_install.cmake 
+ 1966  ls
+ 1967  ls CMakeFiles/
+ 1968  cat CMakeFiles/cmake.check_cache 
+ 1969  cat CMakeFiles/Makefile.cmake 
+ 1970  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE="-O3" -DCMAKE_CXX_FLAGS_RELEASE="-O3" ..
+ 1971  make
+ 1972  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1973  cd -
+ 1974  make
+ 1975  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1976  make
+ 1977  ls
+ 1978  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1979  make
+ 1980  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1981  make
+ 1982  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1983  make
+ 1984  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1985  make
+ 1986  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1987  make
+ 1988  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1989  make
+ 1990  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1991  gprof ./fastdemux gmon.out > profiling_analysis_v5.txt
+ 1992  less profiling_analysis_v5.txt 
+ 1993  make
+ 1994  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1995  gprof ./fastdemux gmon.out > profiling_analysis_v6.txt
+ 1996  less profiling_analysis_v6.txt
+ 1997  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 1998  gprof ./fastdemux gmon.out > profiling_analysis_v7.txt
+ 1999  less profiling_analysis_v7.txt
+ 2000  htop
+ 2001  ls
+ 2002  history
+ 2003  less profiling_analysis_v7.txt
+ 2004  gprof --help
+ 2005  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2006  make
+ 2007  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2008  gprof ./fastdemux gmon.out > profiling_analysis_v8.txt
+ 2009  less profiling_analysis_v8.txt 
+ 2010  make
+ 2011  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2012  gprof ./fastdemux gmon.out > profiling_analysis_v9.txt
+ 2013  less profiling_analysis_v9.txt 
+ 2014  fg
+ 2015  make
+ 2016  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2017  cmake -DCMAKE_C_FLAGS="-pg -g -a" ..
+ 2018  make
+ 2019  cmake -DCMAKE_C_FLAGS="-pg -g" ..
+ 2020  make
+ 2021  time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2022  gprof -A -l -x ./fastdemux gmon.out > profiling_analysis_v10.txt
+ 2023  less profiling_analysis_v10.txt 
+ 2024  gprof -l ./fastdemux gmon.out > profiling_analysis_v10l.txt
+ 2025  less profiling_analysis_v10l.txt 
+ 2026  make
+ 2027  git diff
+ 2028  git commit -a -m "OpenMP does not seem to work to well to improve speed." 
+ 2029  git push
+ 2030  ls
+ 2031  ##time ./fastdemux ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2032  cp ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam /tmp/
+ 2033  time ./fastdemux /tmp/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2034  ls /tmp/possorted_genome_bam.bam
+ 2035  ls /tmp/possorted_genome_bam.bam -halst
+ 2036  time ./fastdemux /tmp/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2037  cp ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/possorted_genome_bam.bam.bai /tmp/
+ 2038  time ./fastdemux /tmp/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2039  cp /tmp/possorted_genome_bam.bam* /dev/shm/
+ 2040  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2041  git history
+ 2042  git log
+ 2043  git diff
+ 2044  git diff 27f671da5dda30ed9ced39a7be2a8454b4670cac
+ 2045  make
+ 2046  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2047  make
+ 2048  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2049  make
+ 2050  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2051  make
+ 2052  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2053  valgrind ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2054  make
+ 2055  valgrind ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2056  make
+ 2057  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2058  make
+ 2059  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2060  make
+ 2061  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2062  fg
+ 2063  make
+ 2064  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2065  make
+ 2066  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2067  make
+ 2068  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2069  make
+ 2070  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2071  ls
+ 2072  less out.txt 
+ 2073  ls
+ 2074  cat out1t100k/out.txt | head
+ 2075  diff out.txt out1t100k/out.txt 
+ 2076  qme
+ 2077  qme -t
+ 2078  make
+ 2079  time ./fastdemux /dev/shm/possorted_genome_bam.bam ../../scALOFT_2024/counts_cellranger_hg38/genotypes/combined.posG9.reheader.vcf.gz <(zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz) out.txt 
+ 2080  qme
+ 2081  ls
+ 2082  less out.txt 
+ 2083  less out.txt | head
+ 2084  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==91'
+ 2085  less bk/out.dlda.txt | awk 'NR==5' | tr '\t' '\n' | awk '$1>6000{print NR,$1}'
+ 2086  less bk/out.dlda.txt | awk 'NR==5' | tr '\t' '\n' | awk '$1>10000{print NR,$1}'
+ 2087  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==111'
+ 2088  less out.txt | head
+ 2089  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==5'
+ 2090  history > history.howto3.txt
+ 2091  less out.txt 
+ 2092  zcat ../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/filtered_feature_bc_matrix/barcodes.tsv.gz | awk 'NR==125'
+ 2093  less bk/out.dlda.txt | awk 'NR==125' | tr '\t' '\n' | awk '$1>10000{print NR,$1}'
+ 2094  bcftools query -l  ../../scALOFT_2024/counts_cellranger_hg38/genotypes/ref.vcf.gz | awk 'NR==226'
+ 2095  less /rs/rs_grp_scaloft/scALOFT_2024/counts_cellranger_hg38/demuxlet/demuxlet/SCAIP10-PHA.out.best | grep AAAGTGACAACCCGCA
+ 2096  history > history.howto3.txt
