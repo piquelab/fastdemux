@@ -12,8 +12,8 @@
 KHASH_MAP_INIT_STR(barcode,int)
 
 #define SQRT2 1.41421356237
-#define BAM_BUFF_SIZE 3600
-#define OMP_THREADS 6
+#define BAM_BUFF_SIZE 12
+#define OMP_THREADS 12
 
 
 // Need to make a new hash table with values that contain info to store barcode or index to bc, 
@@ -214,12 +214,10 @@ int main(int argc, char *argv[]) {
     char *output_filename = argv[4];
 
     int nbcs=0;
-
+    int i,j;
     
     omp_set_num_threads(OMP_THREADS); //Adjust this to env variable.... or option
 
-
- 
     // Load barcodes
     fprintf(stderr, "Reading the barcode file %s\n", barcode_filename);
     khash_t(bc_hash_t) *hbc = load_barcodes(barcode_filename);
@@ -227,24 +225,28 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Number of barcodes is: %d\n", nbcs);
 
     // Open BAM file
+    samFile *sam_fp[BAM_BUFF_SIZE];
+    bam_hdr_t *bam_hdr[BAM_BUFF_SIZE];
+    hts_idx_t *bam_idx[BAM_BUFF_SIZE];
+    
     fprintf(stderr, "Opening BAM file %s\n", bam_filename);
-    samFile *sam_fp = sam_open(bam_filename, "r");
-    if (sam_fp == NULL) {
+
+    for(j=0; j < BAM_BUFF_SIZE; j++){
+      sam_fp[j] = sam_open(bam_filename, "r");
+      if (sam_fp[j] == NULL) {
         fprintf(stderr, "Failed to open BAM file %s\n", bam_filename);
         return 1;
+      }
+      bam_hdr[j] = sam_hdr_read(sam_fp[j]);
+      bam_idx[j] = sam_index_load(sam_fp[j], bam_filename); // Load BAM index
+      if (bam_idx[j] == NULL) {
+        fprintf(stderr, "Failed to open BAM index for %s\n", bam_filename);
+        sam_close(sam_fp[j]);
+        return 1;
+      }
     }
-
     // multithreaded for sam, does not seem to make it faster, but slower
     //hts_set_threads(sam_fp, 6); // 6 threads?
-
-    bam_hdr_t *bam_hdr = sam_hdr_read(sam_fp);
-    hts_idx_t *bam_idx = sam_index_load(sam_fp, bam_filename); // Load BAM index
-    if (bam_idx == NULL) {
-        fprintf(stderr, "Failed to open BAM index for %s\n", bam_filename);
-        sam_close(sam_fp);
-        return 1;
-    }
-
 
     // Open VCF file
     fprintf(stderr, "Open VCF file %s\n", vcf_filename);
@@ -254,7 +256,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     bcf_hdr_t *vcf_hdr = bcf_hdr_read(vcf_fp);
-    bcf1_t *rec = bcf_init();
 
     if (!vcf_hdr) {
       fprintf(stderr, "Error: Could not read header from VCF file %s\n", vcf_filename);
@@ -267,258 +268,208 @@ int main(int argc, char *argv[]) {
 
     // Iterate over sample names in the VCF header
     fprintf(stderr,"There are %d samples in the vcf file: \n",bcf_hdr_nsamples(vcf_hdr));
-    for (int i = 0; i < nsmpl; i++) {
+    for (i = 0; i < nsmpl; i++) {
       const char *sample_name = vcf_hdr->samples[i]; // Get sample name
       fprintf(stderr,"%s\t",sample_name);
     }
     fprintf(stderr,"\n");
 
+    // Verify chromosome names match between bam/vcf
 
     int *bc_count_snps = (int *)malloc(nbcs * sizeof(int));  // Counts SNPs per barcode with >0 reads/UMIs.
     int *bc_count_umis = (int *)malloc(nbcs * sizeof(int)); // Counts UMIs in SNPs per barcode. 
     float *bc_mat_dlda = (float *)malloc(nsmpl * nbcs * sizeof(float)); //Matrix nbcs rows and nsmpl columns, to store DLDA results.  
 
-
     int snpcnt=0;
 
-    for (int i = 0; i < nbcs; i++) bc_count_snps[i]=0;
-    for (int i = 0; i < nbcs; i++) bc_count_umis[i]=0;
-    for (int i = 0; i < nbcs*nsmpl; i++) bc_mat_dlda[i]=0.0;
+    for (i = 0; i < nbcs; i++) bc_count_snps[i]=0;
+    for (i = 0; i < nbcs; i++) bc_count_umis[i]=0;
+    for (i = 0; i < nbcs*nsmpl; i++) bc_mat_dlda[i]=0.0;
 
-    while (bcf_read(vcf_fp, vcf_hdr, rec) == 0) { // Iterate over VCF records
-      if (bcf_unpack(rec, BCF_UN_STR) < 0) continue; // Unpack the current VCF record
+    //buffer rec
+    bcf1_t *rec[BAM_BUFF_SIZE];
+    for(j=0;j<BAM_BUFF_SIZE; j++)
+      rec[j] = bcf_init();
 
-      // Filter bi-allelic SNPs
-      if (rec->n_allele != 2 || strlen(rec->d.allele[0]) != 1 || strlen(rec->d.allele[1]) != 1) continue;
+    //while (bcf_read(vcf_fp, vcf_hdr, rec) == 0) { // Iterate over VCF records
 
-      // Retrieve SNP position and alleles
-      int pos = rec->pos + 1; // Convert to 1-based position
-      char ref_allele = rec->d.allele[0][0];
-      char alt_allele = rec->d.allele[1][0];
-
-      // Initialize allele counts
-      int ref_count = 0, alt_count = 0;
-
-      //Extract dosages from vcf. 
-      float *dosages=NULL;
-      float alf=1E-5; //Instead of 0 I put this so variance does not become to small and avoid division by zero. 
-      int nds_arr = 0;
-
-      snpcnt++;
-
-      if(snpcnt > 20000) break;  // for debugging just a small number of SNPs
-
-      if (bcf_get_format_float(vcf_hdr, rec, "DS", &dosages, &nds_arr) < 0) continue;
-
-      for (int i = 0; i < nsmpl; i++) {
-	//	fprintf(stderr,"%f ",dosages[i]);
-	alf +=dosages[i];
+    while(1){ // Iterate over VCF records; 
+      for(j = 0; j < BAM_BUFF_SIZE; j++){
+	snpcnt++;
+	if(bcf_read(vcf_fp, vcf_hdr, rec[j]) != 0) break; 
       }
-      alf=alf/(nsmpl*2);
-
-      if(snpcnt%1000==1)
-	fprintf(stderr, "Processing %d: %d %s %d %c %c %f\n",snpcnt,rec->rid, bcf_hdr_id2name(vcf_hdr, rec->rid), rec->pos, ref_allele, alt_allele,alf);      
-
-      if(alf * (1-alf) > 0.2) continue; 
-
-      //using dosage array to store the DLDA weights. 
-      for (int i = 0; i < nsmpl; i++)    
-	dosages[i] = (dosages[i] - 2.0 * alf) / (SQRT2 * alf * (1-alf));
-
-      /* GENOTYPE based DOSAGE */
-      /*
-      int *dosages = (int *)malloc(nsmpl * sizeof(int)); // Allocate memory for dosages
-      // Temporary storage for genotype data
-      int32_t *gt_arr = NULL, ngt_arr = 0;
-      // Extract the GT field
-      int ngt = bcf_get_genotypes(vcf_hdr, rec, &gt_arr, &ngt_arr);
-      if (ngt <= 0){
-	free(gt_arr);
-	continue;
-      }
-      // Process each sample
-      for (int i = 0; i < nsmpl; i++) {
-        // Genotypes are stored in the format: allele1 | allele2, with -1 indicating missing data
-        // Calculate the dosage: 0 for reference allele, 1 for each alternate allele
-        int dosage = 0;
-        for (int j = 0; j < ngt / nsmpl; j++) { // Loop over each allele (diploid: 2 alleles)
-	  if (gt_arr[i * (ngt / nsmpl) + j] == bcf_int32_vector_end) break; // Reached the end of alleles for this sample
-	  int allele_index = bcf_gt_allele(gt_arr[i * (ngt / nsmpl) + j]);
-	  if (allele_index > 0) { // Count only alternate alleles
-	    dosage += allele_index; // Assuming biallelic. For multiallelic sites, this needs adjustment
-	  }
-        }
-        dosages[i] = dosage;
-	fprintf(stderr,"%d ",dosage);
-      }
-      fprintf(stderr,"\n");
-      // Cleanup
-      free(gt_arr);
-      */
-
-      //Need to chr are the same 
-      // Setup pileup
-      hts_itr_t *iter = sam_itr_queryi(bam_idx, rec->rid, rec->pos, rec->pos + 1);
-      if (iter != NULL){
-
-      //           fprintf(stderr,"iter not null\n");
-      // Assuming `barcodes` is a khash_t(barcode)* containing valid CB tags
-      // and `reads_hash` is a khash_t(barcode)* used to track unique CB+UB combinations
-      khash_t(bc_info_hash_t) *cb_h = kh_init(bc_info_hash_t); // Hash table for counting reads for CB with unique UMI
-      khash_t(barcode) *cb_ub_h = kh_init(barcode); // Hash table for counting unique CB+UB combos as STRING think to convert to integer as well
-
-      bam1_t *b[BAM_BUFF_SIZE];
-      int j=0;
-      for(j=0;j<BAM_BUFF_SIZE; j++)
-	b[j] = bam_init1(); // Initialize a container for a BAM record.
-
-      while(1){
-      for(j=0;j<BAM_BUFF_SIZE; j++)
-	if(sam_itr_next(sam_fp, iter, b[j])<0) break;
-    
       if(j==0)
 	break;
+
+      //      if(snpcnt > 100000) break;  // for debugging just a small number of SNPs
+
       //schedule(dynamic)
 #pragma omp parallel for 
       for(int jj=0;jj<j;jj++){
-	//while (sam_itr_next(sam_fp, iter, b) >= 0) {
-	// Extract CB tag (cell barcode)
-	uint8_t *cb_ptr = bam_aux_get(b[jj], "CB");
-	if (cb_ptr==NULL) continue; // Skip if no CB tag
-	char* cb = bam_aux2Z(cb_ptr); // Convert to string
-	khint_t k;
 
-	// Follow the CIGAR and get index to the basepair in the read
-	int read_index = find_read_index_for_ref_pos(b[jj], rec->pos);
-	if (read_index < 0) continue; // Skip if the position is not covered by the read
+	if (bcf_unpack(rec[jj], BCF_UN_STR) < 0) continue; // Unpack the current VCF record
 
-	unsigned long int kmer=packKmer(cb,16);
-	// Check if the CB tag is in the list of valid barcodes
-	khint_t kcb = kh_get(bc_hash_t, hbc, kmer);
-	if (kcb == kh_end(hbc)) continue; // Skip if CB not found among valid barcodes 
+	// Filter bi-allelic SNPs
+	if (rec[jj]->n_allele != 2 || strlen(rec[jj]->d.allele[0]) != 1 || strlen(rec[jj]->d.allele[1]) != 1) continue;
 
-  
-	// Extract UB tag (unique molecular identifier)
-	uint8_t *ub_ptr = bam_aux_get(b[jj], "UB");
-	char ub[100]; // Assuming UB won't exceed this length
-	if (ub_ptr) strcpy(ub, bam_aux2Z(ub_ptr)); // Convert to string if present
-	else strcpy(ub, ""); // Use an empty string if no UB tag
-    
-	// Construct a unique key for CB+UB combination
-	char cb_ub_key[200]; // Ensure this is large enough to hold CB+UB+delimiter
-	sprintf(cb_ub_key, "%s-%s", cb, ub);
+	// Retrieve SNP position and alleles
+	int pos = rec[jj]->pos + 1; // Convert to 1-based position
+	char ref_allele = rec[jj]->d.allele[0][0];
+	char alt_allele = rec[jj]->d.allele[1][0];
 
-    
-	// Check if we have already processed this CB
-	int ret=0; 
+	// Initialize allele counts
+	int ref_count = 0, alt_count = 0;
 
-#pragma omp critical
-	{
-	k = kh_put(bc_info_hash_t, cb_h, kmer , &ret); // Add it to the hash table
+	//Extract dosages from vcf. 
+	float *dosages=NULL;
+	float alf=1E-5; //Instead of 0 I put this so variance does not become to small and avoid division by zero. 
+	int nds_arr = 0;
+
+	if (bcf_get_format_float(vcf_hdr, rec[jj], "DS", &dosages, &nds_arr) < 0) continue;
 	
-	assert(ret>=0);
-	if(ret>0){ 
-	  kh_val(cb_h,k).bc_index=kh_val(hbc,kcb);
-	  kh_val(cb_h,k).ref_count=0;
-	  kh_val(cb_h,k).alt_count=0;
+	for (int ii = 0; ii < nsmpl; ii++) {
+	  //	fprintf(stderr,"%f ",dosages[i]);
+	  alf +=dosages[ii];
 	}
-	}
-	// only if unique UMI	  kh_val(cb_h,k)++;	
+	alf=alf/(nsmpl*2);
 
-	// Check if we have already processed this CB+UB combination
-#pragma omp critical
-	{
-	int k2 = kh_put(barcode, cb_ub_h, strdup(cb_ub_key), &ret);
-	}
-	if (ret>=0) { // This is a new, unique CB+UB combination
-	  //  I could do majority voting for multiple cominations, but I will pick the first one for now. 
-        
-	  uint8_t *seq = bam_get_seq(b[jj]); // Get the sequence
-	  // Get base at the read's position corresponding to the SNP
-	  char base = seq_nt16_str[bam_seqi(seq, read_index)]; 
+	if(snpcnt%1000==0)
+	  fprintf(stderr, "Processing %d: %d %s %d %c %c %f\n", snpcnt,rec[jj]->rid, bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), rec[jj]->pos, ref_allele, alt_allele,alf);      
 
-	  // Assuming ref_allele and alt_allele are char variables holding the reference and alternate alleles respectively
-	  if (base == ref_allele) { 
-	    ref_count++;
-#pragma omp critical
-	    kh_val(cb_h,k).ref_count++; 
-	  }
-	  else if (base == alt_allele) { 
-	    alt_count++;
-#pragma omp critical
-	    kh_val(cb_h,k).alt_count++; 
-	  }
-	}// if ret
-	    //	}//omp critical
-       }//For omp
-      }//while(1)
+	//	if(alf * (1-alf) > 0.2) continue; 
+	
+	//using dosage array to store the DLDA weights. 
+	for (int ii = 0; ii < nsmpl; ii++)    
+	  dosages[ii] = (dosages[ii] - 2.0 * alf) / (SQRT2 * alf * (1-alf));
 
-      for(int jj=0;jj<BAM_BUFF_SIZE;jj++)
-	bam_destroy1(b[jj]); // Clean up BAM record container
-      //}//pragma parallel 
-     
-      //I could use a parallel here too, perhaps. Barcodes are independent. 
-#pragma omp parallel for schedule(dynamic)
-      for (khint_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
-	if (kh_exist(cb_h, k))            // test if a bucket contains data
-          if ((kh_val(cb_h,k).ref_count > 0) || (kh_val(cb_h,k).alt_count > 0)) {
-	    // If we want to write a pileup. 
-	    // You may want to write this information to a file instead of printing it. This will allow for ASE calculations down the line. 
-	    // Here we should do the demuxlet calculations using dosage and store results in a matrix.
-	    //    printf("--%s\t%d\t%s\t%f\t%d\t%d\t%d\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, alf, ref_count, alt_count, 
-	    // 	   kh_val(cb_h,k).bc_index, kh_val(cb_h,k).ref_count,kh_val(cb_h,k).alt_count);
+	// Setup pileup
+	hts_itr_t *iter = sam_itr_queryi(bam_idx[jj], rec[jj]->rid, rec[jj]->pos, rec[jj]->pos + 1);
+	if (iter != NULL){
+	  //           fprintf(stderr,"iter not null\n");
+	  // Assuming `barcodes` is a khash_t(barcode)* containing valid CB tags
+	  // and `reads_hash` is a khash_t(barcode)* used to track unique CB+UB combinations
+	  khash_t(bc_info_hash_t) *cb_h = kh_init(bc_info_hash_t); // Hash table for counting reads for CB with unique UMI
+	  khash_t(barcode) *cb_ub_h = kh_init(barcode); // Hash table for counting unique CB+UB combos as STRING think to convert to integer as well
+
+	  bam1_t *b = bam_init1(); // Initialize a container for a BAM record.
+
+	  while (sam_itr_next(sam_fp[jj], iter, b) >= 0) {
+	    // Extract CB tag (cell barcode)
+	    uint8_t *cb_ptr = bam_aux_get(b, "CB");
+	    if (cb_ptr==NULL) continue; // Skip if no CB tag
+	    char* cb = bam_aux2Z(cb_ptr); // Convert to string
+	    khint_t k;
+
+	    // Follow the CIGAR and get index to the basepair in the read
+	    int read_index = find_read_index_for_ref_pos(b, rec[jj]->pos);
+	    if (read_index < 0) continue; // Skip if the position is not covered by the read
+
+	    unsigned long int kmer=packKmer(cb,16);
+	    // Check if the CB tag is in the list of valid barcodes
+	    khint_t kcb = kh_get(bc_hash_t, hbc, kmer);
+	    if (kcb == kh_end(hbc)) continue; // Skip if CB not found among valid barcodes 
+  
+	    // Extract UB tag (unique molecular identifier)
+	    uint8_t *ub_ptr = bam_aux_get(b, "UB");
+	    char ub[100]; // Assuming UB won't exceed this length
+	    if (ub_ptr) strcpy(ub, bam_aux2Z(ub_ptr)); // Convert to string if present
+	    else strcpy(ub, ""); // Use an empty string if no UB tag
+    
+	    // Construct a unique key for CB+UB combination
+	    char cb_ub_key[200]; // Ensure this is large enough to hold CB+UB+delimiter
+	    sprintf(cb_ub_key, "%s-%s", cb, ub);
+
+	    // Check if we have already processed this CB
+	    int ret=0; 
+	    
+	    k = kh_put(bc_info_hash_t, cb_h, kmer , &ret); // Add it to the hash table
+	    assert(ret>=0);
+	    if(ret>0){ 
+	      kh_val(cb_h,k).bc_index=kh_val(hbc,kcb);
+	      kh_val(cb_h,k).ref_count=0;
+	      kh_val(cb_h,k).alt_count=0;
+	    }
+
+	    // Check if we have already processed this CB+UB combination
+	    int k2 = kh_put(barcode, cb_ub_h, strdup(cb_ub_key), &ret);
+	    if (ret>=0) { // This is a new, unique CB+UB combination
+	      //  I could do majority voting for multiple cominations, but I will pick the first one for now.
+	      uint8_t *seq = bam_get_seq(b); // Get the sequence
+	      // Get base at the read's position corresponding to the SNP
+	      char base = seq_nt16_str[bam_seqi(seq, read_index)]; 
+	      // Assuming ref_allele and alt_allele are char variables holding the reference and alternate alleles respectively
+	      if (base == ref_allele) { 
+		ref_count++;
+		kh_val(cb_h,k).ref_count++; 
+	      }
+	      else if (base == alt_allele) { 
+		alt_count++;
+		kh_val(cb_h,k).alt_count++; 
+	      }
+	    }// if ret
+	  }//while(bam)
+	  bam_destroy1(b); // Clean up BAM record container
+
+	  for (khint_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
+	    if (kh_exist(cb_h, k))            // test if a bucket contains data
+	      if ((kh_val(cb_h,k).ref_count > 0) || (kh_val(cb_h,k).alt_count > 0)) {
+		// If we want to write a pileup. 
+		// You may want to write this information to a file instead of printing it. This will allow for ASE calculations down the line. 
+		// Here we should do the demuxlet calculations using dosage and store results in a matrix.
+		//    printf("--%s\t%d\t%s\t%f\t%d\t%d\t%d\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, alf, ref_count, alt_count, 
+		// 	   kh_val(cb_h,k).bc_index, kh_val(cb_h,k).ref_count,kh_val(cb_h,k).alt_count);
     	    
-	    assert(kh_val(cb_h,k).bc_index<nbcs);
+		assert(kh_val(cb_h,k).bc_index<nbcs); // may not be necessary any more. as it should work. 
+		
+#pragma omp critical
+		bc_count_snps[kh_val(cb_h,k).bc_index]++; // Increase number of SNPs seen for this barcode. 
+#pragma omp critical
+		bc_count_umis[kh_val(cb_h,k).bc_index]+= kh_val(cb_h,k).ref_count + kh_val(cb_h,k).alt_count; // Increase number of UMIs in SNPs seen for this barcode. 
 	    
-	    bc_count_snps[kh_val(cb_h,k).bc_index]++; // Increase number of SNPs seen for this barcode. 
-	    bc_count_umis[kh_val(cb_h,k).bc_index]+= kh_val(cb_h,k).ref_count + kh_val(cb_h,k).alt_count; // Increase number of UMIs in SNPs seen for this barcode. 
-	    
-	    float val = kh_val(cb_h,k).alt_count - alf * bc_count_umis[kh_val(cb_h,k).bc_index];
+		float val = kh_val(cb_h,k).alt_count - alf * bc_count_umis[kh_val(cb_h,k).bc_index];
 
-	    //Loop across individuals for a barcode. 
-	    for(int i = 0; i < nsmpl; ++i)
-	      //The weight could be pre-calculated based on alf and dosage for each sample. dosage becomes the wight
-	      // weigths: dosage[i] = ((dosages[i] - 2 * alf) / (SQRT2 * alf * (1-alf)))
-	      bc_mat_dlda[ (kh_val(cb_h,k).bc_index * nsmpl) + i ] += dosages[i] * val;
-	  }
-      
+		//Loop across individuals for a barcode. 
+		for(int ii = 0; ii < nsmpl; ++ii)
+		  //The weight could be pre-calculated based on alf and dosage for each sample. dosage becomes the wight
+		  // weigths: dosage[i] = ((dosages[i] - 2 * alf) / (SQRT2 * alf * (1-alf)))
+#pragma omp critical
+		  bc_mat_dlda[ (kh_val(cb_h,k).bc_index * nsmpl) + ii ] += dosages[ii] * val;
+	      }
       // Clear the reads hash table for the next SNP
-      kh_destroy(barcode, cb_ub_h);
-      kh_destroy(bc_info_hash_t, cb_h);
-      }
+	  kh_destroy(barcode, cb_ub_h);
+	  kh_destroy(bc_info_hash_t, cb_h);
+	}
 
+	//Cleaning up. 
+	sam_itr_destroy(iter);
+	// When you're done with dosages, remember to free it to avoid memory leaks
+	free(dosages);
 
-      //Cleaning up. 
-      sam_itr_destroy(iter);
-      // When you're done with dosages, remember to free it to avoid memory leaks
-      free(dosages);
-
-      // Output to file if there are reads covering the SNP
-      if (ref_count > 0 || alt_count > 0) {
-        //printf("++%s\t%d\t%s\t%f\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, alf, ref_count, alt_count);
-	//        fprintf(stderr,"%s\t%d\t%s\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, ref_count, alt_count);
-        // You may want to write this information to a file instead of printing it
-      }
-
-    }
+	// Output to file if there are reads covering the SNP
+	if (ref_count > 0 || alt_count > 0) {
+	  //printf("++%s\t%d\t%s\t%f\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, alf, ref_count, alt_count);
+	  //        fprintf(stderr,"%s\t%d\t%s\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, ref_count, alt_count);
+	  // You may want to write this information to a file instead of printing it
+	}
+      }// for omp rec vcf
+    }//while(1) bcf
 
     // Print barcode DLDA matrix and BC/SNP/UMI information. 
 
     FILE *fp = fopen(output_filename, "w");
-    for(int i = 0; i<nbcs; i++){
+    for(i = 0; i<nbcs; i++){
       fprintf(fp,"%d\t%d\t%d\n",i,bc_count_snps[i],bc_count_umis[i]);
-	}
+    }
     fclose(fp);
 
-
     fp = fopen("out.dlda.txt", "w");
-    for(int i = 0; i<nbcs; i++){
-      for(int j = 0;j<nsmpl; j++)
+    for(i = 0; i<nbcs; i++){
+      for(j = 0;j<nsmpl; j++)
         fprintf(fp,"%f\t",bc_mat_dlda[i*nsmpl + j]);
       fprintf(fp,"%f\n");
     }
     fclose(fp);
-
+    
 
     // Clean up
     fprintf(stderr, "Closing everything \n");
@@ -526,15 +477,16 @@ int main(int argc, char *argv[]) {
     free(bc_count_snps);
     free(bc_count_umis); 
     free(bc_mat_dlda); 
-
-
-    bcf_destroy(rec);
-    bcf_hdr_destroy(vcf_hdr);
     bcf_close(vcf_fp);
-    hts_idx_destroy(bam_idx);
-    bam_hdr_destroy(bam_hdr);
-    sam_close(sam_fp);
     kh_destroy(bc_hash_t, hbc);
+
+
+    for(j=0;j<BAM_BUFF_SIZE; j++){    
+      bcf_destroy(rec[j]); //convert to loop
+      hts_idx_destroy(bam_idx[j]);
+      bam_hdr_destroy(bam_hdr[j]);
+      sam_close(sam_fp[j]);
+    }
 
     return 0;
 }
