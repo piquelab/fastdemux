@@ -475,12 +475,21 @@ int main(int argc, char *argv[]) {
     for(i = 0; i<nbcs; i++){
       int maxi=0;
       float maxv=0.0;
-      for(j = 0;j<nsmpl; j++)
+      int maxi2=0;
+      float maxv2=0.0;
+
+      for(j = 0;j<nsmpl; j++){
 	if(bc_mat_dlda[i*nsmpl + j]>maxv){
+	  maxv2=maxv;
+	  maxi2=maxi;
 	  maxv=bc_mat_dlda[i*nsmpl + j];
 	  maxi=j; 
+	}else if(bc_mat_dlda[i*nsmpl + j]>maxv2){
+	  maxv2=bc_mat_dlda[i*nsmpl + j];
+	  maxi2=j;
 	}
-      fprintf(fp,"%d\t%d\t%d\t%f\t%d\t%s\n",i,bc_count_snps[i],bc_count_umis[i],maxv,maxi,vcf_hdr->samples[maxi]);
+      }
+      fprintf(fp,"%d\t%d\t%d\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i],maxv,vcf_hdr->samples[maxi],maxv2,vcf_hdr->samples[maxi2]);
     }
     fclose(fp);
 
