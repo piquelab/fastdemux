@@ -9,7 +9,7 @@
 #include <omp.h>
 
 // Define the hash table for storing barcodes (CB tags) with an index to array
-KHASH_MAP_INIT_STR(barcode,int)
+// KHASH_MAP_INIT_STR(barcode,int)  //  decomissioning this
 
 #define SQRT2 1.41421356237
 #define BAM_BUFF_SIZE 12
@@ -28,11 +28,11 @@ typedef struct {
 } bc_info_t;
 
 // Define the hash map type
-KHASH_MAP_INIT_INT(bc_info_hash_t, bc_info_t)
+KHASH_MAP_INIT_INT64(bc_info_hash_t, bc_info_t)
 
 
 // Define the hash table for storing barcodes (CB tags) with an index to array, 
-KHASH_MAP_INIT_INT(bc_hash_t,int) //converting bc to integer, 32 bits should be enough but usign 64 for longer BC.
+KHASH_MAP_INIT_INT64(bc_hash_t,int) //converting bc to integer, 32 bits should be enough but usign 64 for longer BC.
 
 /*
 //encodes A,C,G,T in binary 00, 01, 10, 11
@@ -104,7 +104,7 @@ khash_t(bc_hash_t) *load_barcodes(char *filename) {
     int i=0;
     while (fgets(line, sizeof(line), fp)) {
         int ret;
-        khint_t k;
+        khint64_t k;
         line[strcspn(line, "\n")] = 0; // Remove newline character
         k = kh_put(bc_hash_t, hbc, packKmer(line,16), &ret); // Need to add logic for different size BC
 	assert(ret>0); // Making sure the key is not there. No repeats allowed.
@@ -208,10 +208,11 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    char filename[256];
     char *bam_filename = argv[1];
     char *vcf_filename = argv[2];
     char *barcode_filename = argv[3];
-    char *output_filename = argv[4];
+    char *output_prefix = argv[4];
 
     int nbcs=0;
     int i,j;
@@ -226,7 +227,7 @@ int main(int argc, char *argv[]) {
 
     // Open BAM file
     samFile *sam_fp[BAM_BUFF_SIZE];
-    bam_hdr_t *bam_hdr[BAM_BUFF_SIZE];
+    bam_hdr_t *bam_hdr;  //I only need one hdr in multithreaded. 
     hts_idx_t *bam_idx[BAM_BUFF_SIZE];
     
     fprintf(stderr, "Opening BAM file %s\n", bam_filename);
@@ -237,7 +238,6 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to open BAM file %s\n", bam_filename);
         return 1;
       }
-      bam_hdr[j] = sam_hdr_read(sam_fp[j]);
       bam_idx[j] = sam_index_load(sam_fp[j], bam_filename); // Load BAM index
       if (bam_idx[j] == NULL) {
         fprintf(stderr, "Failed to open BAM index for %s\n", bam_filename);
@@ -245,6 +245,8 @@ int main(int argc, char *argv[]) {
         return 1;
       }
     }
+    bam_hdr = sam_hdr_read(sam_fp[0]);
+
     // multithreaded for sam, does not seem to make it faster, but slower
     //hts_set_threads(sam_fp, 6); // 6 threads?
 
@@ -275,6 +277,16 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"\n");
 
     // Verify chromosome names match between bam/vcf
+    /* To finish.... 
+    for (i = 0; i < bam_hdr->n_targets && i < bcf_hdr_nsamples(vcf_hdr); ++i) {
+      const char *bam_chr = bam_hdr->target_name[i];
+      const char *vcf_chr = bcf_hdr_id2name(vcf_hdr, i);
+      if (strcmp(bam_chr, vcf_chr) != 0) {
+	printf("Mismatch found: BAM[%d] = %s, VCF[%d] = %s\n", i, bam_chr, i, vcf_chr);
+	return 1;
+      }
+    }
+    */
 
     int *bc_count_snps = (int *)malloc(nbcs * sizeof(int));  // Counts SNPs per barcode with >0 reads/UMIs.
     int *bc_count_umis = (int *)malloc(nbcs * sizeof(int)); // Counts UMIs in SNPs per barcode. 
@@ -333,7 +345,7 @@ int main(int argc, char *argv[]) {
 	}
 	alf=alf/(nsmpl*2);
 
-	if(snpcnt%1000==0)
+	if(snpcnt%1000==0 && jj==0)
 	  fprintf(stderr, "Processing %d: %d %s %d %c %c %f\n", snpcnt,rec[jj]->rid, bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), rec[jj]->pos, ref_allele, alt_allele,alf);      
 
 	//	if(alf * (1-alf) > 0.2) continue; 
@@ -349,7 +361,7 @@ int main(int argc, char *argv[]) {
 	  // Assuming `barcodes` is a khash_t(barcode)* containing valid CB tags
 	  // and `reads_hash` is a khash_t(barcode)* used to track unique CB+UB combinations
 	  khash_t(bc_info_hash_t) *cb_h = kh_init(bc_info_hash_t); // Hash table for counting reads for CB with unique UMI
-	  khash_t(barcode) *cb_ub_h = kh_init(barcode); // Hash table for counting unique CB+UB combos as STRING think to convert to integer as well
+	  khash_t(bc_hash_t) *cb_ub_h = kh_init(bc_hash_t); // Hash table for counting unique CB+UB combos as STRING think to convert to integer as well
 
 	  bam1_t *b = bam_init1(); // Initialize a container for a BAM record.
 
@@ -358,7 +370,7 @@ int main(int argc, char *argv[]) {
 	    uint8_t *cb_ptr = bam_aux_get(b, "CB");
 	    if (cb_ptr==NULL) continue; // Skip if no CB tag
 	    char* cb = bam_aux2Z(cb_ptr); // Convert to string
-	    khint_t k;
+	    khint64_t k;
 
 	    // Follow the CIGAR and get index to the basepair in the read
 	    int read_index = find_read_index_for_ref_pos(b, rec[jj]->pos);
@@ -366,7 +378,7 @@ int main(int argc, char *argv[]) {
 
 	    unsigned long int kmer=packKmer(cb,16);
 	    // Check if the CB tag is in the list of valid barcodes
-	    khint_t kcb = kh_get(bc_hash_t, hbc, kmer);
+	    khint64_t kcb = kh_get(bc_hash_t, hbc, kmer);
 	    if (kcb == kh_end(hbc)) continue; // Skip if CB not found among valid barcodes 
   
 	    // Extract UB tag (unique molecular identifier)
@@ -390,8 +402,8 @@ int main(int argc, char *argv[]) {
 	      kh_val(cb_h,k).alt_count=0;
 	    }
 
-	    // Check if we have already processed this CB+UB combination
-	    int k2 = kh_put(barcode, cb_ub_h, strdup(cb_ub_key), &ret);
+	    // Check if we have already processed this CB+UB combination... May need to pass paramters for length. 
+	    int k2 = kh_put(bc_hash_t, cb_ub_h, packKmer(cb_ub_key,strlen(cb_ub_key)), &ret);
 	    if (ret>=0) { // This is a new, unique CB+UB combination
 	      //  I could do majority voting for multiple cominations, but I will pick the first one for now.
 	      uint8_t *seq = bam_get_seq(b); // Get the sequence
@@ -410,7 +422,7 @@ int main(int argc, char *argv[]) {
 	  }//while(bam)
 	  bam_destroy1(b); // Clean up BAM record container
 
-	  for (khint_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
+	  for (khint64_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
 	    if (kh_exist(cb_h, k))            // test if a bucket contains data
 	      if ((kh_val(cb_h,k).ref_count > 0) || (kh_val(cb_h,k).alt_count > 0)) {
 		// If we want to write a pileup. 
@@ -423,11 +435,10 @@ int main(int argc, char *argv[]) {
 		
 #pragma omp critical
 		bc_count_snps[kh_val(cb_h,k).bc_index]++; // Increase number of SNPs seen for this barcode. 
+		int N=kh_val(cb_h,k).ref_count + kh_val(cb_h,k).alt_count;
 #pragma omp critical
-		bc_count_umis[kh_val(cb_h,k).bc_index]+= kh_val(cb_h,k).ref_count + kh_val(cb_h,k).alt_count; // Increase number of UMIs in SNPs seen for this barcode. 
-	    
-		float val = kh_val(cb_h,k).alt_count - alf * bc_count_umis[kh_val(cb_h,k).bc_index];
-
+		bc_count_umis[kh_val(cb_h,k).bc_index]+= N; // Increase number of UMIs in SNPs seen for this barcode. 		
+		float val = kh_val(cb_h,k).alt_count - alf * (float)N;
 		//Loop across individuals for a barcode. 
 		for(int ii = 0; ii < nsmpl; ++ii)
 		  //The weight could be pre-calculated based on alf and dosage for each sample. dosage becomes the wight
@@ -436,7 +447,7 @@ int main(int argc, char *argv[]) {
 		  bc_mat_dlda[ (kh_val(cb_h,k).bc_index * nsmpl) + ii ] += dosages[ii] * val;
 	      }
       // Clear the reads hash table for the next SNP
-	  kh_destroy(barcode, cb_ub_h);
+	  kh_destroy(bc_hash_t, cb_ub_h);
 	  kh_destroy(bc_info_hash_t, cb_h);
 	}
 
@@ -456,13 +467,27 @@ int main(int argc, char *argv[]) {
 
     // Print barcode DLDA matrix and BC/SNP/UMI information. 
 
-    FILE *fp = fopen(output_filename, "w");
+    fprintf(stderr,"Processed %d SNPs\n",snpcnt);
+    strcpy(filename, output_prefix); // Copy the prefix into filename
+    strcat(filename, ".info.txt"); // Append the extension to filename 
+    fprintf(stderr," Writing ouput file:  %s\n",filename);
+    FILE *fp = fopen(filename, "w");
     for(i = 0; i<nbcs; i++){
-      fprintf(fp,"%d\t%d\t%d\n",i,bc_count_snps[i],bc_count_umis[i]);
+      int maxi=0;
+      float maxv=0.0;
+      for(j = 0;j<nsmpl; j++)
+	if(bc_mat_dlda[i*nsmpl + j]>maxv){
+	  maxv=bc_mat_dlda[i*nsmpl + j];
+	  maxi=j; 
+	}
+      fprintf(fp,"%d\t%d\t%d\t%f\t%d\t%s\n",i,bc_count_snps[i],bc_count_umis[i],maxv,maxi,vcf_hdr->samples[maxi]);
     }
     fclose(fp);
 
-    fp = fopen("out.dlda.txt", "w");
+    strcpy(filename, output_prefix); // Copy the prefix into filename
+    strcat(filename, ".dlda.txt"); // Append the extension to filename 
+    fprintf(stderr," Writing ouput file:  %s\n",filename);
+    fp = fopen(filename, "w");
     for(i = 0; i<nbcs; i++){
       for(j = 0;j<nsmpl; j++)
         fprintf(fp,"%f\t",bc_mat_dlda[i*nsmpl + j]);
@@ -484,9 +509,9 @@ int main(int argc, char *argv[]) {
     for(j=0;j<BAM_BUFF_SIZE; j++){    
       bcf_destroy(rec[j]); //convert to loop
       hts_idx_destroy(bam_idx[j]);
-      bam_hdr_destroy(bam_hdr[j]);
       sam_close(sam_fp[j]);
     }
+    bam_hdr_destroy(bam_hdr);
 
     return 0;
 }
