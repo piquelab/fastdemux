@@ -277,16 +277,22 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"\n");
 
     // Verify chromosome names match between bam/vcf
-    /* To finish.... 
-    for (i = 0; i < bam_hdr->n_targets && i < bcf_hdr_nsamples(vcf_hdr); ++i) {
+    // This assumes that are ordered the same way between the two files and it could be ext 
+    fprintf(stderr,"There are %d contigs in the bam file\n",bam_hdr->n_targets);
+    fprintf(stderr,"There are %d contigs in the vcf file\n",vcf_hdr->n[BCF_DT_CTG]); 
+    fprintf(stderr,"Verifying chromosome order and naming for the vcf file is the same as in the bam file: ");
+    for (i = 0; i < vcf_hdr->n[BCF_DT_CTG]; ++i) {
       const char *bam_chr = bam_hdr->target_name[i];
-      const char *vcf_chr = bcf_hdr_id2name(vcf_hdr, i);
+      const char *vcf_chr = bcf_hdr_id2name(vcf_hdr, i); //vcf_hdr->id[BCF_DT_CTG][i].key;
+      // Find corresponding chromosome ID in BAM header
+      //      int bam_contig_id = bam_get_tid(bam_header, vcf_contig);
       if (strcmp(bam_chr, vcf_chr) != 0) {
-	printf("Mismatch found: BAM[%d] = %s, VCF[%d] = %s\n", i, bam_chr, i, vcf_chr);
+	fprintf(stderr,"NOT OK\n");
+	fprintf(stderr,"Mismatch found: BAM[%d] = %s, VCF[%d] = %s\n", i, bam_chr, i, vcf_chr);
 	return 1;
       }
     }
-    */
+    fprintf(stderr,"OK\n");
 
     //Traverse the hash to save the kmer of CB?
     int *bc_count_snps = (int *)malloc(nbcs * sizeof(int));  // Counts SNPs per barcode with >0 reads/UMIs.
@@ -356,7 +362,8 @@ int main(int argc, char *argv[]) {
 	for (int ii = 0; ii < nsmpl; ii++)    
 	  dosages[ii] = (dosages[ii] - 2.0 * alf) / (SQRT2 * alf * (1-alf));
 
-	// Setup pileup
+	// Setup pileup 
+	// May need to convert rid to bamid. if not ordered the same. 
 	hts_itr_t *iter = sam_itr_queryi(bam_idx[jj], rec[jj]->rid, rec[jj]->pos, rec[jj]->pos + 1);
 	if (iter != NULL){
 	  //           fprintf(stderr,"iter not null\n");
