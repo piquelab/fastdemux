@@ -4,7 +4,7 @@
 #include <htslib/vcf.h>
 #include <htslib/faidx.h>
 #include "khash.h"
-
+#include <zlib.h>
 
 #include <omp.h>
 
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
     
     omp_set_num_threads(OMP_THREADS); //Adjust this to env variable.... or option
 
-    // Load barcodes
+    // Load barcodes, 
     fprintf(stderr, "Reading the barcode file %s\n", barcode_filename);
     khash_t(bc_hash_t) *hbc = load_barcodes(barcode_filename);
     nbcs = kh_size(hbc);
@@ -288,6 +288,7 @@ int main(int argc, char *argv[]) {
     }
     */
 
+    //Traverse the hash to save the kmer of CB?
     int *bc_count_snps = (int *)malloc(nbcs * sizeof(int));  // Counts SNPs per barcode with >0 reads/UMIs.
     int *bc_count_umis = (int *)malloc(nbcs * sizeof(int)); // Counts UMIs in SNPs per barcode. 
     float *bc_mat_dlda = (float *)malloc(nsmpl * nbcs * sizeof(float)); //Matrix nbcs rows and nsmpl columns, to store DLDA results.  
@@ -313,6 +314,7 @@ int main(int argc, char *argv[]) {
       if(j==0)
 	break;
 
+      // To debug 
       //      if(snpcnt > 100000) break;  // for debugging just a small number of SNPs
 
       //schedule(dynamic)
@@ -469,9 +471,9 @@ int main(int argc, char *argv[]) {
 
     fprintf(stderr,"Processed %d SNPs\n",snpcnt);
     strcpy(filename, output_prefix); // Copy the prefix into filename
-    strcat(filename, ".info.txt"); // Append the extension to filename 
+    strcat(filename, ".info.txt.gz"); // Append the extension to filename 
     fprintf(stderr," Writing ouput file:  %s\n",filename);
-    FILE *fp = fopen(filename, "w");
+    gzFile fp = gzopen(filename, "w");
     for(i = 0; i<nbcs; i++){
       int maxi=0;
       float maxv=0.0;
@@ -489,20 +491,21 @@ int main(int argc, char *argv[]) {
 	  maxi2=j;
 	}
       }
-      fprintf(fp,"%d\t%d\t%d\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i],maxv,vcf_hdr->samples[maxi],maxv2,vcf_hdr->samples[maxi2]);
+      // Consdier unpacking the kmer unPackKmer(unsigned long int kmer,int k,char *s) but I need the kmer stored in an array....
+      gzprintf(fp,"%d\t%d\t%d\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i],maxv,vcf_hdr->samples[maxi],maxv2,vcf_hdr->samples[maxi2]);
     }
-    fclose(fp);
+    gzclose(fp);
 
     strcpy(filename, output_prefix); // Copy the prefix into filename
-    strcat(filename, ".dlda.txt"); // Append the extension to filename 
+    strcat(filename, ".dlda.txt.gz"); // Append the extension to filename 
     fprintf(stderr," Writing ouput file:  %s\n",filename);
-    fp = fopen(filename, "w");
+    fp = gzopen(filename, "w");
     for(i = 0; i<nbcs; i++){
       for(j = 0;j<nsmpl; j++)
-        fprintf(fp,"%f\t",bc_mat_dlda[i*nsmpl + j]);
-      fprintf(fp,"%f\n");
+        gzprintf(fp,"%f\t",bc_mat_dlda[i*nsmpl + j]);
+      gzprintf(fp,"%f\n");
     }
-    fclose(fp);
+    gzclose(fp);
     
 
     // Clean up
