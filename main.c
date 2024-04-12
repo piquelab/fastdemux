@@ -356,7 +356,10 @@ int main(int argc, char *argv[]) {
 	if(snpcnt%1000==0 && jj==0)
 	  fprintf(stderr, "Processing %d: %d %s %d %c %c %f\n", snpcnt,rec[jj]->rid, bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), rec[jj]->pos, ref_allele, alt_allele,alf);      
 
-	//	if(alf * (1-alf) > 0.2) continue; 
+	if(alf * (1-alf) > 0.1){  // low freq. alleles are more informative. 
+	  free(dosages);
+	  continue; 
+	}
 	
 	//using dosage array to store the DLDA weights. 
 	for (int ii = 0; ii < nsmpl; ii++)    
@@ -375,6 +378,10 @@ int main(int argc, char *argv[]) {
 	  bam1_t *b = bam_init1(); // Initialize a container for a BAM record.
 
 	  while (sam_itr_next(sam_fp[jj], iter, b) >= 0) {
+
+	    // Check the mapping quality
+	    if (b->core.qual < 20) continue; // Skip if the alignment quality is below 10. TODO: make it a parameter. 
+
 	    // Extract CB tag (cell barcode)
 	    uint8_t *cb_ptr = bam_aux_get(b, "CB");
 	    if (cb_ptr==NULL) continue; // Skip if no CB tag
@@ -384,6 +391,11 @@ int main(int argc, char *argv[]) {
 	    // Follow the CIGAR and get index to the basepair in the read
 	    int read_index = find_read_index_for_ref_pos(b, rec[jj]->pos);
 	    if (read_index < 0) continue; // Skip if the position is not covered by the read
+
+
+	    uint8_t *quals = bam_get_qual(b);
+	    if (quals[0] == 0xff) continue;  
+	    if (quals[read_index]<13) continue;  //Minimum base quality to consider (lower BQ will be skipped)
 
 	    unsigned long int kmer=packKmer(cb,16);
 	    // Check if the CB tag is in the list of valid barcodes
