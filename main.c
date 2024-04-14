@@ -298,12 +298,21 @@ int main(int argc, char *argv[]) {
     int *bc_count_snps = (int *)malloc(nbcs * sizeof(int));  // Counts SNPs per barcode with >0 reads/UMIs.
     int *bc_count_umis = (int *)malloc(nbcs * sizeof(int)); // Counts UMIs in SNPs per barcode. 
     float *bc_mat_dlda = (float *)malloc(nsmpl * nbcs * sizeof(float)); //Matrix nbcs rows and nsmpl columns, to store DLDA results.  
+    int doubletcalc=1; // If we ant to calculate doublets 
+    int ndsmpl = nsmpl * (nsmpl-1) / 2; 
+    float *bc_dmat_dlda;
 
+    if(doubletcalc){
+      fprintf(stderr,"Preparing to calculate %d doublets.\n",ndsmpl);
+      bc_dmat_dlda = (float *)malloc(ndsmpl * nbcs * sizeof(float)); //Matrix nbcs rows and numdsmp columns, to store DLDA results for doublets
+    }
     int snpcnt=0;
 
     for (i = 0; i < nbcs; i++) bc_count_snps[i]=0;
     for (i = 0; i < nbcs; i++) bc_count_umis[i]=0;
     for (i = 0; i < nbcs*nsmpl; i++) bc_mat_dlda[i]=0.0;
+
+
 
     //buffer rec
     bcf1_t *rec[BAM_BUFF_SIZE];
@@ -344,8 +353,10 @@ int main(int argc, char *argv[]) {
 	float *dosages=NULL;
 	float alf=1E-5; //Instead of 0 I put this so variance does not become to small and avoid division by zero. 
 	int nds_arr = 0;
+	float *dweigths;
 
 	if (bcf_get_format_float(vcf_hdr, rec[jj], "DS", &dosages, &nds_arr) < 0) continue;
+
 	
 	for (int ii = 0; ii < nsmpl; ii++) {
 	  //	fprintf(stderr,"%f ",dosages[i]);
@@ -359,6 +370,15 @@ int main(int argc, char *argv[]) {
 	if(alf * (1-alf) > 0.1){  // low freq. alleles are more informative. 
 	  free(dosages);
 	  continue; 
+	}
+
+	// Each thread needs each own dweigths. 
+	int kk=0;
+	if(doubletcalc){
+	  dweigths = (float *)malloc(ndsmpl * sizeof(float));
+	  for(int i=0;i<nsmpl;i++)
+	    for(int j=i+1;j<nsmpl;j++)
+	      dweigths[kk++] = ((dosages[i] + dosages[j]) / 2 - 2.0 *alf) / (SQRT2 * alf * (1-alf));
 	}
 	
 	//using dosage array to store the DLDA weights. 
@@ -466,6 +486,10 @@ int main(int argc, char *argv[]) {
 		  // weigths: dosage[i] = ((dosages[i] - 2 * alf) / (SQRT2 * alf * (1-alf)))
 #pragma omp critical
 		  bc_mat_dlda[ (kh_val(cb_h,k).bc_index * nsmpl) + ii ] += dosages[ii] * val;
+		if(doubletcalc)  // DLDA to doublets. 
+		  for(int ii = 0; ii < ndsmpl; ++ii)
+#pragma omp critical
+		    bc_dmat_dlda[ (kh_val(cb_h,k).bc_index * ndsmpl) + ii ] += dweigths[ii] * val;
 	      }
       // Clear the reads hash table for the next SNP
 	  kh_destroy(bc_hash_t, cb_ub_h);
@@ -476,6 +500,8 @@ int main(int argc, char *argv[]) {
 	sam_itr_destroy(iter);
 	// When you're done with dosages, remember to free it to avoid memory leaks
 	free(dosages);
+	if(doubletcalc)
+	  free(dweigths);
 
 	// Output to file if there are reads covering the SNP
 	if (ref_count > 0 || alt_count > 0) {
@@ -495,9 +521,12 @@ int main(int argc, char *argv[]) {
     gzFile fp = gzopen(filename, "w");
     for(i = 0; i<nbcs; i++){
       int maxi=0;
-      float maxv=0.0;
       int maxi2=0;
+      int maxid=0; 
+      float maxv=0.0;
       float maxv2=0.0;
+      float maxvd=0.0;
+
 
       for(j = 0;j<nsmpl; j++){
 	if(bc_mat_dlda[i*nsmpl + j]>maxv){
@@ -510,8 +539,21 @@ int main(int argc, char *argv[]) {
 	  maxi2=j;
 	}
       }
+      if(doubletcalc){  // DLDA to doublets.   
+	for(j=0;j<ndsmpl;j++){
+	  if(bc_dmat_dlda[i*ndsmpl + j]>maxvd){
+	    maxvd=bc_mat_dlda[i*nsmpl + j];
+	    maxid=j; 
+	  }
+	}
+      }	//dweigths  bc_dmat_dlda
+
       // Consdier unpacking the kmer unPackKmer(unsigned long int kmer,int k,char *s) but I need the kmer stored in an array....
-      gzprintf(fp,"%d\t%d\t%d\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i],maxv,vcf_hdr->samples[maxi],maxv2,vcf_hdr->samples[maxi2]);
+      // or just consider opening the barcode file again and read it a second time.... 
+      if(doubletcalc)  // DLDA to doublets.   
+	gzprintf(fp,"%d\t%d\t%d\t%f\t%s\t%f\t%s\t%f\t%d\n",i,bc_count_snps[i],bc_count_umis[i],maxv,vcf_hdr->samples[maxi],maxv2,vcf_hdr->samples[maxi2],maxvd,maxid);
+      else
+	gzprintf(fp,"%d\t%d\t%d\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i],maxv,vcf_hdr->samples[maxi],maxv2,vcf_hdr->samples[maxi2]);
     }
     gzclose(fp);
 
@@ -525,7 +567,19 @@ int main(int argc, char *argv[]) {
       gzprintf(fp,"%f\n");
     }
     gzclose(fp);
-    
+
+    if(doubletcalc){  // DLDA to doublets.   
+      strcpy(filename, output_prefix); // Copy the prefix into filename
+      strcat(filename, ".doublet.dlda.txt.gz"); // Append the extension to filename 
+      fprintf(stderr," Writing ouput file:  %s\n",filename);
+      fp = gzopen(filename, "w");
+      for(i = 0; i<nbcs; i++){
+	for(j = 0;j<ndsmpl; j++)
+	  gzprintf(fp,"%f\t",bc_dmat_dlda[i*ndsmpl + j]);
+	gzprintf(fp,"%f\n");
+      }
+      gzclose(fp);
+    }
 
     // Clean up
     fprintf(stderr, "Closing everything \n");
@@ -533,6 +587,9 @@ int main(int argc, char *argv[]) {
     free(bc_count_snps);
     free(bc_count_umis); 
     free(bc_mat_dlda); 
+    if(doubletcalc){  // DLDA to doublets.   
+      free(bc_dmat_dlda);
+    }
     bcf_close(vcf_fp);
     kh_destroy(bc_hash_t, hbc);
 
