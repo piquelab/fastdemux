@@ -13,39 +13,41 @@ $$
 g_n^b=\sum_{l=1}^L \sum_{k=1}^{K^b_l} \frac{d_{nl} - 2 q_l}{\sqrt{2 q_l (1-q_l)}} \frac{X_{bk} - q_l}{\sqrt{q_l (1-q_l)}}
 $$
 
-## DLDA for singlets 
+## DLDA for singlets
+
 For each barcode $b$ and individual $n$:
 
 $$
 g_n^b=\sum_{l=1}^L \sum_{k=1}^{K^b_l} \frac{d_{nl} - 2 q_l}{\sqrt{2 q_l (1-q_l)}} \frac{X_{bk} - q_l}{\sqrt{q_l (1-q_l)}}
 $$
 
-- Note that we treat each read $X_{bk}$ as independent and it equals 1 if it is the alternate allele, and 0 otherwise. 
-- For each barcode $b=1, ..., B$ we gather all reads $k=1, ..., K^b_l$  on genetic variants: $l=1, ..., L$. 
-- For each individual $n=1,...,N$ we also have the dosage $d_{nl}$ and alternate allele frequency $q_l=\sum_n^Nd_{nl}$
+-   Note that we treat each read $X_{bk}$ as independent and it equals 1 if it is the alternate allele, and 0 otherwise.
+-   For each barcode $b=1, ..., B$ we gather all reads $k=1, ..., K^b_l$ on genetic variants: $l=1, ..., L$.
+-   For each individual $n=1,...,N$ we also have the dosage $d_{nl}$ and alternate allele frequency $q_l=\sum_n^Nd_{nl}$
 
-## DLDA for singlets 
+## DLDA for singlets
+
 For each barcode $b$ and individual $n$:
 
 $$
 g_n^b=\sum_{l=1}^L \sum_{k=1}^{K^b_l} \frac{d_{nl} - 2 q_l}{\sqrt{2 q_l (1-q_l)}} \frac{X_{bk} - q_l}{\sqrt{q_l (1-q_l)}}
 $$
 
-Note that left and right side are normalized to have mean 0 and variance 1. 
+Note that left and right side are normalized to have mean 0 and variance 1.
 
-## DLDA for doublets 
+## DLDA for doublets
+
 For each barcode $b$ and individual $n$ and $n'$:
 
 $$
 g_{nn'}^b=\sum_{l=1}^L \sum_{k=1}^{K^b_l} \frac{\frac{d_{nl}+d_{n'l}}{2} - 2 q_l}{\sqrt{q_l (1-q_l)}} \frac{X_{bk} - q_l}{\sqrt{q_l (1-q_l)}}
 $$
 
-Note that the variance of the weight for the doublet is $\sqrt{2}$ lower than of a singlet. 
+Note that the variance of the weight for the doublet is $\sqrt{2}$ lower than of a singlet.
 
+## DLDA for singlets
 
-## DLDA for singlets 
-After adding all the reads at location $l$, $A^b_l= \sum_{k=1}^{K^b_l} X_{bk}$
-$$
+After adding all the reads at location $l$, $A^b_l= \sum_{k=1}^{K^b_l} X_{bk}$ $$
 g_n^b=\sum_{l=1}^L \sum_{k=1}^{K^b_l} \frac{d_{nl} - 2 q_l}{\sqrt{2 q_l (1-q_l)}} \frac{X_{bk} - q_l}{\sqrt{q_l (1-q_l)}}
 $$
 
@@ -54,31 +56,27 @@ g_n^b=\sum_{l=1}^L \frac{d_{nl} - 2 q_l}{\sqrt{2} q_l (1-q_l)}  \sum_{k=1}^{K^b_
 $$
 
 $$
-g_n^b=\sum_{l=1}^L \frac{d_{nl} - 2 q_l}{\sqrt{2} q_l (1-q_l)} \{A^b_{l} - K^b_l q_l\}
+g_n^b=\sum_{l=1}^L \frac{d_{nl} - 2 q_l}{\sqrt{2} q_l (1-q_l)} \left(A^b_{l} - K^b_l q_l\right)
 $$
 
-## DLDA for doublets 
-Similarly for doublets:
-$$
+## DLDA for doublets
+
+Similarly for doublets: $$
 g_{nn'}^b=\sum_{l=1}^L \sum_{k=1}^{K^b_l} \frac{\frac{d_{nl}+d_{n'l}}{2} - 2 q_l}{\sqrt{q_l (1-q_l)}} \frac{X_{bk} - q_l}{\sqrt{q_l (1-q_l)}}
-= \sum_{l=1}^L  \frac{\frac{d_{nl}+d_{n'l}}{2} - 2 q_l}{q_l (1-q_l)}  \{A^b_{l} - K^b_l q_l\}
-$$
-but now we can express it in terms of singlets:
-$$
-g_{nn'}^b=\sum_{l=1}^L  \frac{ \frac{d_{nl} - 2 q_l}{2} + \frac{d_{n'l} -  2 q_l}{2} }{q_l (1-q_l)}  \{A^b_{l} - K^b_l q_l\} = \sqrt{2} \frac{g_{n}^b+g_{n'}^b}{2}
+= \sum_{l=1}^L  \frac{\frac{d_{nl}+d_{n'l}}{2} - 2 q_l}{q_l (1-q_l)}  \left(A^b_{l} - K^b_l q_l\right)
+$$ but now we can express it in terms of singlets: $$
+g_{nn'}^b=\sum_{l=1}^L  \frac{ \frac{d_{nl} - 2 q_l}{2} + \frac{d_{n'l} -  2 q_l}{2} }{q_l (1-q_l)}  \left(A^b_{l} - K^b_l q_l\right) = \sqrt{2} \frac{g_{n}^b+g_{n'}^b}{2}
 $$
 
 ## DLDA for $M$-let
 
 $$
-g_{n_1,...,n_M}^b=\sum_{l=1}^L  \frac{ \sum_m^M \frac{d_{n_m,l} - 2 q_l}{M}}{\sqrt{2/M} q_l (1-q_l)}   \{A^b_{l} - K^b_l q_l\}
+g_{n_1,...,n_M}^b=\sum_{l=1}^L  \frac{ \sum_m^M \frac{d_{n_m,l} - 2 q_l}{M}}{\sqrt{2/M} q_l (1-q_l)}   \left(A^b_{l} - K^b_l q_l\right)
 $$
 
 $$
 g_{n_1,...,n_M}^b=\frac{\sqrt{M}}{M} \sum_m^M g_{n_m}^b
 $$
-
-
 
 ## Code
 
