@@ -4,6 +4,8 @@
 #include <htslib/vcf.h>
 #include <htslib/faidx.h>
 #include "khash.h"
+#include "ketopt.h"
+
 #include <zlib.h>
 
 #include <omp.h>
@@ -16,18 +18,14 @@
 #define OMP_THREADS 12
 
 
-// Need to make a new hash table with values that contain info to store barcode or index to bc, 
-// bci index of the barcode. 
-// rc  reference allele count.
-// ac  alternate allele count. 
 // Define the structure to hold the barcode index, reference allele count, and alternate allele count
 typedef struct {
-  int bc_index;
-  int ref_count;
-  int alt_count;
+  int bc_index;  // index of the barcode as it appears in the barcode file (see below). 
+  int ref_count; // reference allele count.   
+  int alt_count; // alternate allele count.       
 } bc_info_t;
 
-// Define the hash map type
+// Define the hash map type for CB, value counting number of UMIs, it could be used to count reads too. 
 KHASH_MAP_INIT_INT64(bc_info_hash_t, bc_info_t)
 
 
@@ -99,64 +97,23 @@ void unPackKmer(unsigned long int kmer,int k,char *s){
 // Function to load valid barcodes from a file into a hash table
 khash_t(bc_hash_t) *load_barcodes(char *filename) {
     khash_t(bc_hash_t) *hbc = kh_init(bc_hash_t);
-    FILE *fp = fopen(filename, "r");
+    //    FILE *fp = fopen(filename, "r");
+    gzFile fp = gzopen(filename, "r");
     char line[256];
     int i=0;
-    while (fgets(line, sizeof(line), fp)) {
-        int ret;
+    //    while (fgets(line, sizeof(line), fp)) {
+    while (gzgets(fp, line, sizeof(line))) { 
+       int ret;
         khint64_t k;
         line[strcspn(line, "\n")] = 0; // Remove newline character
         k = kh_put(bc_hash_t, hbc, packKmer(line,16), &ret); // Need to add logic for different size BC
 	assert(ret>0); // Making sure the key is not there. No repeats allowed.
 	kh_val(hbc, k)=i++;  //This is the bc_index for later. 
     }
-    fclose(fp);
+    //    fclose(fp);
+    gzclose(fp);
     return hbc;
 }
-
-
-// Function to find the read sequence index corresponding to a reference position
-// based on the CIGAR string of the alignment. Returns -1 if the position is not covered.
-/* 
-int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
-  uint32_t *cigar = bam_get_cigar(aln);
-  int read_pos = 0; // Position in the read
-  int ref_pos_aligned = aln->core.pos; // Aligned position in the reference
-
-  for (uint32_t i = 0; i < aln->core.n_cigar; ++i) {
-    int op = cigar[i] & BAM_CIGAR_MASK;
-    int len = cigar[i] >> BAM_CIGAR_SHIFT;
-
-    switch (op) {
-    case BAM_CMATCH:
-    case BAM_CEQUAL:
-    case BAM_CDIFF:
-      if (ref_pos_aligned + len > ref_pos) {
-	return read_pos + (ref_pos - ref_pos_aligned);
-      }
-      read_pos += len;
-      ref_pos_aligned += len;
-      break;
-    case BAM_CINS:
-    case BAM_CSOFT_CLIP:
-      read_pos += len;
-      break;
-    case BAM_CDEL:
-    case BAM_CREF_SKIP:
-      if (ref_pos_aligned + len > ref_pos) {
-	return -1; // Reference position falls within a deletion
-      }
-      ref_pos_aligned += len;
-      break;
-    default:
-      // Other CIGAR operations are not considered here
-      break;
-    }
-  }
-  return -1; // Reference position is not covered by the read
-}
-
-*/
 
 int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
   uint32_t *cigar = bam_get_cigar(aln);
@@ -171,7 +128,6 @@ int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
     if ((op == BAM_CDEL || op == BAM_CREF_SKIP) && ref_pos_aligned + len > ref_pos) {
       return -1; // Reference position falls within a deletion or skip
     }
-
     switch (op) {
     case BAM_CMATCH:
     case BAM_CEQUAL:
@@ -190,15 +146,12 @@ int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
     case BAM_CREF_SKIP:
       ref_pos_aligned += len;
       break;
-      // Other CIGAR operations are not considered here
     default:
       break;
     }
   }
   return -1; // Reference position is not covered by the read
 }
-
-
 
 
 // Main function to process BAM and VCF files
