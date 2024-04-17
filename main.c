@@ -14,7 +14,7 @@
 // KHASH_MAP_INIT_STR(barcode,int)  //  decomissioning this
 
 #define SQRT2 1.41421356237
-#define BAM_BUFF_SIZE 12
+#define BAM_BUFF_SIZE 4
 #define OMP_THREADS 12
 
 
@@ -65,7 +65,7 @@ unsigned long int packKmer(char *s,int k){
 }
 */
 
-
+// It don't think this is faster than the option above. but I wanted to try. 
 unsigned long int packKmer(char *s, int k) {
   static const int encoding[128] = {
     ['A'] = 0, ['C'] = 1, ['G'] = 2, ['T'] = 3,
@@ -153,24 +153,83 @@ int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
   return -1; // Reference position is not covered by the read
 }
 
+static ko_longopt_t longopts[] = {
+  { "min-qual-score", ko_required_argument, 301 },
+  { "min-base-qual",  ko_required_argument, 302 },
+  { "num-threads",  ko_required_argument, 303 },
+  { "max-var", ko_required_argument, 304 },
+  { "max-snps", ko_required_argument, 305 },
+  { NULL, 0, 0 } // End marker
+};
 
 // Main function to process BAM and VCF files
 int main(int argc, char *argv[]) {
-    if (argc < 5) {
-        fprintf(stderr, "Usage: %s <BAM file> <VCF file> <Barcode file> <Output file>\n", argv[0]);
-        return 1;
+
+    ketopt_t opt = KETOPT_INIT;
+    float max_var = 0.1;
+    int c, min_qual_score = 20, min_base_qual = 13, num_threads = OMP_THREADS, max_snps=0; // default values
+    while ((c = ketopt(&opt, argc, argv, 1, "q:b:t:", longopts)) >= 0) {
+      switch(c){
+      case 'q':
+      case 301:
+	min_qual_score = atoi(opt.arg);
+	break;
+      case 'b':
+      case 302:
+	min_base_qual = atoi(opt.arg);
+	break;
+      case 't':
+      case 303:
+        num_threads = atoi(opt.arg);
+	break;
+      case 304:
+        max_var = atof(opt.arg);
+	break;
+      case 305:
+        max_snps = atoi(opt.arg);
+	break;
+      case '?':
+	fprintf(stderr,"unknown opt: -%c\n", opt.opt? opt.opt : ':');
+	return 1;
+      case ':':
+	fprintf(stderr,"missing arg: -%c\n", opt.opt? opt.opt : ':');
+	return 1;
+      default:
+	break;
+      }
     }
 
+    // Check for required files and other positional arguments if necessary
+    if (argc - opt.ind < 4) {
+      fprintf(stderr, "Usage: %s [options] <BAM file> <VCF file> <Barcode file> <Output prefix>\n", argv[0]);
+      fprintf(stderr, "Options:\n");
+      fprintf(stderr, " -q, --min-qual-score NUM  Minimum quality score (default: %d)\n",min_qual_score);
+      fprintf(stderr, " -b, --min-base-qual NUM   Minimum base quality (default: %d)\n",min_base_qual);
+      fprintf(stderr, " --max-var REAL  Threshold on max 2*q*(1-q) to select more informative SNPs  (default: %f)\n",max_var);	
+      fprintf(stderr, " --max-snps NUM  Max number of SNPs  (useful for debug, default: %d All)\n",max_snps);
+      fprintf(stderr, " -t, --num-threads NUM  Number of OpenMP threads (default: %d)\n",num_threads);
+      return 1;
+    }
+
+    fprintf(stderr, "Options settings:\n");
+    fprintf(stderr, " -q, --min-qual-score: %d\n",min_qual_score);
+    fprintf(stderr, " -b, --min-base-qual: %d\n",min_base_qual);
+    fprintf(stderr, " --max-var: %f\n",max_var);	
+    fprintf(stderr, " --max-snps %d (0=All)\n",max_snps);
+    fprintf(stderr, " -t, --num-threads: %d\n",num_threads);
+ 
+
+    char *bam_filename = argv[opt.ind];
+    char *vcf_filename = argv[opt.ind + 1];
+    char *barcode_filename = argv[opt.ind + 2];
+    char *output_prefix = argv[opt.ind + 3];
     char filename[256];
-    char *bam_filename = argv[1];
-    char *vcf_filename = argv[2];
-    char *barcode_filename = argv[3];
-    char *output_prefix = argv[4];
 
     int nbcs=0;
     int i,j;
     
-    omp_set_num_threads(OMP_THREADS); //Adjust this to env variable.... or option
+
+    omp_set_num_threads(num_threads); //Adjust this to env variable.... or option
 
     // Load barcodes, 
     fprintf(stderr, "Reading the barcode file %s\n", barcode_filename);
@@ -179,13 +238,13 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Number of barcodes is: %d\n", nbcs);
 
     // Open BAM file
-    samFile *sam_fp[BAM_BUFF_SIZE];
+    samFile *sam_fp[BAM_BUFF_SIZE * num_threads];
     bam_hdr_t *bam_hdr;  //I only need one hdr in multithreaded. 
-    hts_idx_t *bam_idx[BAM_BUFF_SIZE];
+    hts_idx_t *bam_idx[BAM_BUFF_SIZE * num_threads];
     
     fprintf(stderr, "Opening BAM file %s\n", bam_filename);
 
-    for(j=0; j < BAM_BUFF_SIZE; j++){
+    for(j=0; j < BAM_BUFF_SIZE*num_threads; j++){
       sam_fp[j] = sam_open(bam_filename, "r");
       if (sam_fp[j] == NULL) {
         fprintf(stderr, "Failed to open BAM file %s\n", bam_filename);
@@ -252,29 +311,40 @@ int main(int argc, char *argv[]) {
     int *bc_count_umis = (int *)malloc(nbcs * sizeof(int)); // Counts UMIs in SNPs per barcode. 
     float *bc_mat_dlda = (float *)malloc(nsmpl * nbcs * sizeof(float)); //Matrix nbcs rows and nsmpl columns, to store DLDA results.  
 
+    assert(bc_count_snps != NULL);
+    assert(bc_count_umis != NULL);
+    assert(bc_mat_dlda != NULL);
+
     int snpcnt=0;
 
     for (i = 0; i < nbcs; i++) bc_count_snps[i]=0;
     for (i = 0; i < nbcs; i++) bc_count_umis[i]=0;
     for (i = 0; i < nbcs*nsmpl; i++) bc_mat_dlda[i]=0.0;
 
-    //buffer rec
-    bcf1_t *rec[BAM_BUFF_SIZE];
-    for(j=0;j<BAM_BUFF_SIZE; j++)
+    //buffer rec for multithreaded. 
+    bcf1_t *rec[BAM_BUFF_SIZE*num_threads];
+    for(j=0;j<BAM_BUFF_SIZE*num_threads; j++)
       rec[j] = bcf_init();
 
-    //while (bcf_read(vcf_fp, vcf_hdr, rec) == 0) { // Iterate over VCF records
 
-    while(1){ // Iterate over VCF records; 
-      for(j = 0; j < BAM_BUFF_SIZE; j++){
+    ////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
+    //////////          VCF LOOP                    ////////////
+    ////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
+
+    //while (bcf_read(vcf_fp, vcf_hdr, rec) == 0) { // Iterate over VCF records
+    while(1){ // Iterate over VCF records;
+      // Buffering records for multithreaded.
+      for(j = 0; j < BAM_BUFF_SIZE*num_threads; j++){
 	snpcnt++;
 	if(bcf_read(vcf_fp, vcf_hdr, rec[j]) != 0) break; 
       }
-      if(j==0)
+      if(j==0) // If no more things in the buffer. 
 	break;
 
-      // To debug 
-      //      if(snpcnt > 100000) break;  // for debugging just a small number of SNPs
+      // Useful for debugging a few snps; e.g. using --max-snps 10000 option.  
+      if(max_snps>0 && snpcnt>max_snps) break;  
 
       //schedule(dynamic)
 #pragma omp parallel for 
@@ -306,10 +376,10 @@ int main(int argc, char *argv[]) {
 	}
 	alf=alf/(nsmpl*2);
 
-	if(snpcnt%1000==0 && jj==0)
+	if(snpcnt%1000==0 && jj==0) // verbose progress every 1000 SNPs approximately. 
 	  fprintf(stderr, "Processing %d: %d %s %d %c %c %f\n", snpcnt,rec[jj]->rid, bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), rec[jj]->pos, ref_allele, alt_allele,alf);      
 
-	if(alf * (1-alf) > 0.1){  // low freq. alleles are more informative. 
+	if((2 * alf * (1 - alf) >= max_var) && (max_var > 0)){  // low freq. alleles are more informative. 
 	  free(dosages);
 	  continue; 
 	}
@@ -318,8 +388,14 @@ int main(int argc, char *argv[]) {
 	for (int ii = 0; ii < nsmpl; ii++)    
 	  dosages[ii] = (dosages[ii] - 2.0 * alf) / (SQRT2 * alf * (1-alf));
 
-	// Setup pileup 
-	// May need to convert rid to bamid. if not ordered the same. 
+
+	////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
+	//////////        Iterating  bam records        ////////////
+	////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
+	// Setup pileup looping over bam records overlapping SNP position. 
+	// May need to convert rid to bamid. if not ordered the same, but for now I'm checking if same exact order.  
 	hts_itr_t *iter = sam_itr_queryi(bam_idx[jj], rec[jj]->rid, rec[jj]->pos, rec[jj]->pos + 1);
 	if (iter != NULL){
 	  //           fprintf(stderr,"iter not null\n");
@@ -333,7 +409,7 @@ int main(int argc, char *argv[]) {
 	  while (sam_itr_next(sam_fp[jj], iter, b) >= 0) {
 
 	    // Check the mapping quality
-	    if (b->core.qual < 20) continue; // Skip if the alignment quality is below 10. TODO: make it a parameter. 
+	    if (b->core.qual < min_qual_score) continue; // Skip if the alignment quality is below 10. TODO: make it a parameter. 
 
 	    // Extract CB tag (cell barcode)
 	    uint8_t *cb_ptr = bam_aux_get(b, "CB");
@@ -348,7 +424,7 @@ int main(int argc, char *argv[]) {
 
 	    uint8_t *quals = bam_get_qual(b);
 	    if (quals[0] == 0xff) continue;  
-	    if (quals[read_index]<13) continue;  //Minimum base quality to consider (lower BQ will be skipped)
+	    if (quals[read_index] < min_base_qual) continue;  //Minimum base quality to consider (lower BQ will be skipped)
 
 	    unsigned long int kmer=packKmer(cb,16);
 	    // Check if the CB tag is in the list of valid barcodes
@@ -361,8 +437,9 @@ int main(int argc, char *argv[]) {
 	    if (ub_ptr) strcpy(ub, bam_aux2Z(ub_ptr)); // Convert to string if present
 	    else strcpy(ub, ""); // Use an empty string if no UB tag
     
-	    // Construct a unique key for CB+UB combination
-	    char cb_ub_key[200]; // Ensure this is large enough to hold CB+UB+delimiter
+	    // Construct a unique key for CB+UB combination.
+	    // This can be handled more efficiently by pushing CB with << k and just converting UB to kmer and adding up. 
+	    char cb_ub_key[200]; // Ensure this is large enough to hold CB+UB+delimiter  
 	    sprintf(cb_ub_key, "%s-%s", cb, ub);
 
 	    // Check if we have already processed this CB
@@ -396,17 +473,19 @@ int main(int argc, char *argv[]) {
 	  }//while(bam)
 	  bam_destroy1(b); // Clean up BAM record container
 
+	  //Traversing the barcode hash table with the allele counts for the current SNP. 
 	  for (khint64_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
 	    if (kh_exist(cb_h, k))            // test if a bucket contains data
 	      if ((kh_val(cb_h,k).ref_count > 0) || (kh_val(cb_h,k).alt_count > 0)) {
 		// If we want to write a pileup. 
 		// You may want to write this information to a file instead of printing it. This will allow for ASE calculations down the line. 
-		// Here we should do the demuxlet calculations using dosage and store results in a matrix.
+		// But it maybe better to just do it on heterozygote genotypes as a second pass once we determine the (bc,individual) pairs. 
 		//    printf("--%s\t%d\t%s\t%f\t%d\t%d\t%d\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, alf, ref_count, alt_count, 
 		// 	   kh_val(cb_h,k).bc_index, kh_val(cb_h,k).ref_count,kh_val(cb_h,k).alt_count);
-    	    
-		assert(kh_val(cb_h,k).bc_index<nbcs); // may not be necessary any more. as it should work. 
-		
+
+		//assert(kh_val(cb_h,k).bc_index<nbcs); // may not be necessary any more. as it should work. 
+
+		// Here we do the fastdemux dlda calculations using dosage and store results in a matrix.		
 #pragma omp critical
 		bc_count_snps[kh_val(cb_h,k).bc_index]++; // Increase number of SNPs seen for this barcode. 
 		int N=kh_val(cb_h,k).ref_count + kh_val(cb_h,k).alt_count;
@@ -430,12 +509,13 @@ int main(int argc, char *argv[]) {
 	// When you're done with dosages, remember to free it to avoid memory leaks
 	free(dosages);
 
-	// Output to file if there are reads covering the SNP
-	if (ref_count > 0 || alt_count > 0) {
+	//Not needed.. 
+       	// Output to file if there are reads covering the SNP
+	//	if (ref_count > 0 || alt_count > 0) {
 	  //printf("++%s\t%d\t%s\t%f\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, alf, ref_count, alt_count);
 	  //        fprintf(stderr,"%s\t%d\t%s\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, ref_count, alt_count);
 	  // You may want to write this information to a file instead of printing it
-	}
+	//	}
       }// for omp rec vcf
     }//while(1) bcf
 
@@ -468,6 +548,8 @@ int main(int argc, char *argv[]) {
     }
     gzclose(fp);
 
+
+    // maybe not always necessary, maybe use an option to see if we want to print. 
     strcpy(filename, output_prefix); // Copy the prefix into filename
     strcat(filename, ".dlda.txt.gz"); // Append the extension to filename 
     fprintf(stderr," Writing ouput file:  %s\n",filename);
@@ -490,7 +572,7 @@ int main(int argc, char *argv[]) {
     kh_destroy(bc_hash_t, hbc);
 
 
-    for(j=0;j<BAM_BUFF_SIZE; j++){    
+    for(j=0;j<BAM_BUFF_SIZE*num_threads; j++){    
       bcf_destroy(rec[j]); //convert to loop
       hts_idx_destroy(bam_idx[j]);
       sam_close(sam_fp[j]);
