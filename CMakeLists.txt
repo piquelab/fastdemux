@@ -27,5 +27,5 @@ include_directories(${ZLIB_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} main.c)
 
 # Link htslib
-target_link_libraries(${PROJECT_NAME} PUBLIC hts OpenMP::OpenMP_C ${ZLIB_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC hts m OpenMP::OpenMP_C ${ZLIB_LIBRARIES})
 
