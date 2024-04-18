@@ -5,7 +5,7 @@ library(tidyverse)
 library(data.table)
 
 md <- fread("../build/out.test.info.txt.gz")
-colnames(md) <- c("Bcnum","Nsnp","Numi","BestScore","BestSample","SecondBestScore","SecondBestSample")
+colnames(md) <- c("bcnum","Nsnp","Numi","BestScore","BestSample","SecondBestScore","SecondBestSample")
 head(md)
 
 

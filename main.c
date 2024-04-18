@@ -452,8 +452,9 @@ int main(int argc, char *argv[]) {
 	    khint64_t kcb = kh_get(bc_hash_t, hbc, kmer);
 	    if (kcb == kh_end(hbc)) continue; // Skip if CB not found among valid barcodes 
   
-	    // Extract UB tag (unique molecular identifier)
-	    uint8_t *ub_ptr = bam_aux_get(b, "UB");
+	    // Extract UB tag (unique molecular identifier)  
+	    uint8_t *ub_ptr = bam_aux_get(b, "UB");  // Maybe parameter for this. 
+	    // Consider how to handle missing UB tag. if ub_ptr==NULL // we could use the read first bases for ATAC. 
 	    char ub[100]; // Assuming UB won't exceed this length
 	    if (ub_ptr) strcpy(ub, bam_aux2Z(ub_ptr)); // Convert to string if present
 	    else strcpy(ub, ""); // Use an empty string if no UB tag
@@ -548,14 +549,16 @@ int main(int argc, char *argv[]) {
     fprintf(stderr," Writing ouput file:  %s\n",filename);
     gzFile fp = gzopen(filename, "w");
     //Make header
+    //AAAAAAAAAATCGACC-1      339     202     431     1       0.690469        0.690469        AL-001  0.146772        AL-190  0.041283        AL-064 
     //    gzprintf(fp,"\t%d\t%d\t%f\t%s\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i]
+    gzprintf(fp,"BARCODE\tbcnum\tNsnp\tNumi\tDropType\tComboScore\tBestScore\tBestSample\tSecondBestScore\tSecondBestSample\tThirdBestScore\tThirdBestSample\n");
     for(i = 0; i<nbcs; i++){
       pair_t order[nsmpl];
       float kletval,kletvalmax; 
       int kletindex; 
       char kmerstring[32]; //long enough to hold the CB barcode. 
-
-      // Could remove things with 0 UMIs. 
+      
+      // Not reporting droplets with 0 UMIs. 
       if(bc_count_umis[i]<1)
 	continue;
 
@@ -600,10 +603,18 @@ int main(int argc, char *argv[]) {
     strcat(filename, ".dlda.txt.gz"); // Append the extension to filename 
     fprintf(stderr," Writing ouput file:  %s\n",filename);
     fp = gzopen(filename, "w");
+    // Header, next 4 lines.
+    gzprintf(fp,"BARCODE");
+    for(j = 0;j<nsmpl; j++)
+      gzprintf(fp,"\t%s",vcf_hdr->samples[j]);
+    gzprintf(fp,"\n");
     for(i = 0; i<nbcs; i++){
+      char kmerstring[32]; //long enough to hold the CB barcode. 
+      unPackKmer(bc_kmer[i],16,kmerstring);
+      gzprintf(fp,"%s-1",kmerstring);
       for(j = 0;j<nsmpl; j++)
-        gzprintf(fp,"%f\t",bc_mat_dlda[i*nsmpl + j]);
-      gzprintf(fp,"%f\n");
+        gzprintf(fp,"\t%f",bc_mat_dlda[i*nsmpl + j]);
+     gzprintf(fp,"\n");
     }
     gzclose(fp);
     
