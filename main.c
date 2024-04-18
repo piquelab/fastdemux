@@ -3,9 +3,12 @@
 #include <htslib/sam.h>
 #include <htslib/vcf.h>
 #include <htslib/faidx.h>
+
 #include "khash.h"
 #include "ketopt.h"
+#include "ksort.h"
 
+#include <math.h>
 #include <zlib.h>
 
 #include <omp.h>
@@ -17,6 +20,16 @@
 #define BAM_BUFF_SIZE 4
 #define OMP_THREADS 12
 
+
+// Define a structure to hold the value with its index
+typedef struct {
+  float value;
+  int index;
+} pair_t;
+
+// Comparator macro for descending sort
+#define pair_gt(a, b) ((a).value > (b).value)
+KSORT_INIT(pair, pair_t, pair_gt)
 
 // Define the structure to hold the barcode index, reference allele count, and alternate allele count
 typedef struct {
@@ -30,7 +43,7 @@ KHASH_MAP_INIT_INT64(bc_info_hash_t, bc_info_t)
 
 
 // Define the hash table for storing barcodes (CB tags) with an index to array, 
-KHASH_MAP_INIT_INT64(bc_hash_t,int) //converting bc to integer, 32 bits should be enough but usign 64 for longer BC.
+KHASH_MAP_INIT_INT64(bc_hash_t,int) //converting bc to integer, 32 bits should be enough but usign 64 for longer BC, and for the combined. 
 
 /*
 //encodes A,C,G,T in binary 00, 01, 10, 11
@@ -306,15 +319,23 @@ int main(int argc, char *argv[]) {
     }
     fprintf(stderr,"OK\n");
 
-    //Traverse the hash to save the kmer of CB?
+
     int *bc_count_snps = (int *)malloc(nbcs * sizeof(int));  // Counts SNPs per barcode with >0 reads/UMIs.
-    int *bc_count_umis = (int *)malloc(nbcs * sizeof(int)); // Counts UMIs in SNPs per barcode. 
-    float *bc_mat_dlda = (float *)malloc(nsmpl * nbcs * sizeof(float)); //Matrix nbcs rows and nsmpl columns, to store DLDA results.  
-
     assert(bc_count_snps != NULL);
+    int *bc_count_umis = (int *)malloc(nbcs * sizeof(int)); // Counts UMIs in SNPs per barcode. 
     assert(bc_count_umis != NULL);
+    float *bc_mat_dlda = (float *)malloc(nsmpl * nbcs * sizeof(float)); //Matrix nbcs rows and nsmpl columns, to store DLDA results.  
     assert(bc_mat_dlda != NULL);
+ 
+    unsigned long int *bc_kmer = (unsigned long int *) malloc(nbcs * sizeof(unsigned long int)); 
+    assert(bc_kmer != NULL);
 
+    //Traverse the hash to save the kmer of CB?
+    for (khint64_t k = kh_begin(hbc); k != kh_end(hbc); ++k)  // traverse
+      if (kh_exist(hbc, k))            // test if a bucket contains data
+	bc_kmer[kh_val(hbc,k)]=k;
+       
+    
     int snpcnt=0;
 
     for (i = 0; i < nbcs; i++) bc_count_snps[i]=0;
@@ -526,25 +547,50 @@ int main(int argc, char *argv[]) {
     strcat(filename, ".info.txt.gz"); // Append the extension to filename 
     fprintf(stderr," Writing ouput file:  %s\n",filename);
     gzFile fp = gzopen(filename, "w");
+    //Make header
+    //    gzprintf(fp,"\t%d\t%d\t%f\t%s\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i]
     for(i = 0; i<nbcs; i++){
-      int maxi=0;
-      float maxv=0.0;
-      int maxi2=0;
-      float maxv2=0.0;
+      pair_t order[nsmpl];
+      float kletval,kletvalmax; 
+      int kletindex; 
+      char kmerstring[32]; //long enough to hold the CB barcode. 
 
-      for(j = 0;j<nsmpl; j++){
-	if(bc_mat_dlda[i*nsmpl + j]>maxv){
-	  maxv2=maxv;
-	  maxi2=maxi;
-	  maxv=bc_mat_dlda[i*nsmpl + j];
-	  maxi=j; 
-	}else if(bc_mat_dlda[i*nsmpl + j]>maxv2){
-	  maxv2=bc_mat_dlda[i*nsmpl + j];
-	  maxi2=j;
-	}
+      // Could remove things with 0 UMIs. 
+      if(bc_count_umis[i]<1)
+	continue;
+
+      for (j = 0; j < nsmpl; j++) {
+        order[j].index = j ;  // Store the index
+        order[j].value = bc_mat_dlda[ i * nsmpl + j ] / bc_count_umis[i];  // Store the corresponding value
       }
+
+      // Sort using 
+      ks_mergesort(pair, nsmpl, order, 0);
+
+      kletindex=0; 
+      kletvalmax=order[0].value;
+      kletval=order[0].value;
+      for (j = 1; j < nsmpl; j++) {
+	kletval += order[j].value;
+	if(kletvalmax < 1/sqrt(j+1)*kletval){
+	  kletvalmax = 1/sqrt(j+1)*kletval;
+	  kletindex = j;
+	}
+	if((order[j].value < 0) || (kletindex>12))
+	  kletindex=13;
+	  break;
+      }
+
       // Consdier unpacking the kmer unPackKmer(unsigned long int kmer,int k,char *s) but I need the kmer stored in an array....
-      gzprintf(fp,"%d\t%d\t%d\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i],maxv,vcf_hdr->samples[maxi],maxv2,vcf_hdr->samples[maxi2]);
+      // bc_kmer[i] has the kmer packed. 
+      unPackKmer(bc_kmer[i],16,kmerstring);
+      
+      gzprintf(fp,"%s-1\t%d\t%d\t%d\t%d\t%f\t%f\t%s\t%f\t%s\t%f\t%s\n",kmerstring,i,bc_count_snps[i],bc_count_umis[i]
+	       ,kletindex+1,kletvalmax
+	       ,order[0].value,vcf_hdr->samples[order[0].index]
+	       ,order[1].value,vcf_hdr->samples[order[1].index]
+	       ,order[2].value,vcf_hdr->samples[order[2].index]
+	       );
     }
     gzclose(fp);
 
@@ -568,6 +614,7 @@ int main(int argc, char *argv[]) {
     free(bc_count_snps);
     free(bc_count_umis); 
     free(bc_mat_dlda); 
+    free(bc_kmer);
     bcf_close(vcf_fp);
     kh_destroy(bc_hash_t, hbc);
 
