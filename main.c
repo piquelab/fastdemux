@@ -477,7 +477,7 @@ int main(int argc, char *argv[]) {
 
 	    // Check if we have already processed this CB+UB combination... May need to pass paramters for length. 
 	    int k2 = kh_put(bc_hash_t, cb_ub_h, packKmer(cb_ub_key,strlen(cb_ub_key)), &ret);
-	    if (ret>=0) { // This is a new, unique CB+UB combination
+	    if (ret>0) { // This is a new, unique CB+UB combination
 	      //  I could do majority voting for multiple cominations, but I will pick the first one for now.
 	      uint8_t *seq = bam_get_seq(b); // Get the sequence
 	      // Get base at the read's position corresponding to the SNP
@@ -495,6 +495,12 @@ int main(int argc, char *argv[]) {
 	  }//while(bam)
 	  bam_destroy1(b); // Clean up BAM record container
 
+
+	  //////////////////////////////////////////////////////////////////////////////////
+	  //////////////////////////////////////////////////////////////////////////////////
+	  // Traversing the barcode hash table with the allele counts for the current SNP //
+	  //////////////////////////////////////////////////////////////////////////////////
+	  //////////////////////////////////////////////////////////////////////////////////
 	  //Traversing the barcode hash table with the allele counts for the current SNP. 
 	  for (khint64_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
 	    if (kh_exist(cb_h, k))            // test if a bucket contains data
@@ -514,6 +520,7 @@ int main(int argc, char *argv[]) {
 #pragma omp critical
 		bc_count_umis[kh_val(cb_h,k).bc_index]+= N; // Increase number of UMIs in SNPs seen for this barcode. 		
 		float val = kh_val(cb_h,k).alt_count - alf * (float)N;
+		//		float val = kh_val(cb_h,k).alt_count/(float)N - alf; // This may work better. 
 		//Loop across individuals for a barcode. 
 		for(int ii = 0; ii < nsmpl; ++ii)
 		  //The weight could be pre-calculated based on alf and dosage for each sample. dosage becomes the wight
@@ -541,8 +548,12 @@ int main(int argc, char *argv[]) {
       }// for omp rec vcf
     }//while(1) bcf
 
-    // Print barcode DLDA matrix and BC/SNP/UMI information. 
 
+    ////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
+    /////    Print BC/SNP/UMI information and results     //////
+    ////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     fprintf(stderr,"Processed %d SNPs\n",snpcnt);
     strcpy(filename, output_prefix); // Copy the prefix into filename
     strcat(filename, ".info.txt.gz"); // Append the extension to filename 
@@ -570,6 +581,7 @@ int main(int argc, char *argv[]) {
       // Sort using 
       ks_mergesort(pair, nsmpl, order, 0);
 
+      // Determine if singlet, doublet or M-let. 
       kletindex=0; 
       kletvalmax=order[0].value;
       kletval=order[0].value;
@@ -619,7 +631,7 @@ int main(int argc, char *argv[]) {
     gzclose(fp);
     
 
-    // Clean up
+    // Final Clean up
     fprintf(stderr, "Closing everything \n");
 
     free(bc_count_snps);
