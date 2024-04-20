@@ -4,20 +4,17 @@ library(tidyverse)
 
 library(data.table)
 
-md <- fread("../build/out.test.info.txt.gz")
-colnames(md) <- c("bcnum","Nsnp","Numi","BestScore","BestSample","SecondBestScore","SecondBestSample")
-head(md)
+md <- fread("../build/out.SCAIP10-PHA.full.2024-04-19.info.txt.gz")
 
 
+##dlda <- fread("../build/out.SCAIP10-PHA.full.2024-04-19.dlda.txt.gz")
+##dim(dlda)
 
-
-dlda <- fread("../build/out.test.dlda.txt.gz")
-dim(dlda)
-
+md$BARCODE.old <- md$BARCODE
 bclist <- fread("../../scALOFT_2024/counts_cellranger_hg38/SCAIP10-PHA/raw_feature_bc_matrix/barcodes.tsv.gz",header=FALSE)
-md$BARCODE <- bclist$V1
-rm(bclist)
-head(md)
+md$BARCODE <- bclist$V1[md$bcnum+1]
+
+sum(md$BARCODE==md$BARCODE.old)
 
 demuxlet <- fread("/rs/rs_grp_scaloft/scALOFT_2024/counts_cellranger_hg38/demuxlet/demuxlet/SCAIP10-PHA.out.best")
 
@@ -28,52 +25,45 @@ md2 <- inner_join(md,demuxlet)
 table(md2$DROPLET.TYPE,md2$SNG.BEST.GUESS==md2$BestSample)
 
 md2 <- md2 %>% 
-  mutate(BestScore=BestScore/sqrt(Numi),
-         SecondBestScore=SecondBestScore/sqrt(Numi),
-         DiffScore=BestScore-SecondBestScore,
-         DoubScore=sqrt(2)/2*(BestScore+SecondBestScore)-BestScore) 
-
-md2 <- md2 %>% 
   filter(Nsnp>100,Numi>100)
-
-dlda2 <- dlda[md2$Bcnum+1,]/sqrt(md2$Numi)
-
-cs <- colMeans(dlda2)
-hist(cs,breaks=50)
-
-sum(cs>1.8)
 
 table(md2$DROPLET.TYPE,md2$SNG.BEST.GUESS==md2$BestSample)
 
-tt<- table(md2$BestSample[md2$DiffScore>5])
-inbatch <- names(which(tt>500))
+
+##dlda2 <- dlda[md2$Bcnum+1,]/sqrt(md2$Numi)
+##cs <- colMeans(dlda2)
+##hist(cs,breaks=50)
+##sum(cs>1.8)
+
+table(md2$DROPLET.TYPE,md2$SNG.BEST.GUESS==md2$BestSample)
+
+tt<- table(md2$BestSample[md2$DropType==1])
+inbatch <- names(which(tt>200))
 
 it <- which(tt>500)
 
-table(md2$DiffScore>6 & md2$DoubScore< 0,md2$SNG.BEST.GUESS==md2$BestSample)
+table(md2$DropType==1 ,md2$SNG.BEST.GUESS==md2$BestSample)
+
+table(md2$DropType,md2$DROPLET.TYPE)
+
+tt <- table(md2$DROPLET.TYPE,md2$BestSample %in% inbatch)
+tt
+tt/rowSums(tt)
 
 
-table(md2$DROPLET.TYPE,md2$BestScore>5 & md2$DoubScore>0)
+tt <- table(md2$DropType==1,md2$BestSample %in% inbatch)
+tt
+tt[2,]/sum(tt[2,])
 
-table(md2$DROPLET.TYPE,md2$DiffScore>5 )
+tt <-table(md2$DropType,md2$BestSample %in% inbatch)
+tt
+tt/rowSums(tt)
 
 
-table(md2$DROPLET.TYPE,md2$DiffScore>5 & md2$DoubScore< 0)
+hist(log10(md2$BestScore),breaks=100)
 
-table(md2$DROPLET.TYPE,md2$BestSample %in% inbatch)
-
-table(md2$DiffScore>5 & md2$DoubScore<0 & md2$BestScore > 5,md2$BestSample %in% inbatch)
-
-hist(unlist(dlda2[,10]),breaks=100)
-
-md2$DiffScore[md2$DiffScore>6]=6;
-
-ggplot(md2, aes(x=DiffScore,fill=DROPLET.TYPE)) + 
+ggplot(md2, aes(x=log10(BestScore),fill=DROPLET.TYPE)) + 
   geom_histogram() +
-  theme_bw()
-
-ggplot(md2, aes(x=DiffScore,y=BestScore,color=DROPLET.TYPE)) + 
-  geom_point() +
   theme_bw()
 
 
