@@ -21,7 +21,7 @@
 #define OMP_THREADS 12
 
 
-// Define a structure to hold the value with its index
+// Define a structure to hold the value with its index for sorting
 typedef struct {
   float value;
   int index;
@@ -33,6 +33,7 @@ KSORT_INIT(pair, pair_t, pair_gt)
 
 // Define the structure to hold the barcode index, reference allele count, and alternate allele count
 typedef struct {
+  unsigned long int kmer; //the kmer
   int bc_index;  // index of the barcode as it appears in the barcode file (see below). 
   int ref_count; // reference allele count.   
   int alt_count; // alternate allele count.       
@@ -42,10 +43,16 @@ typedef struct {
 KHASH_MAP_INIT_INT64(bc_info_hash_t, bc_info_t)
 
 
-// Define the hash table for storing barcodes (CB tags) with an index to array, 
-KHASH_MAP_INIT_INT64(bc_hash_t,int) //converting bc to integer, 32 bits should be enough but usign 64 for longer BC, and for the combined. 
+typedef struct {
+  unsigned long int kmer; //the kmer
+  int bc_index;  // index of the barcode as it appears in the barcode file (see below). 
+} bc_anno_t;
 
-/*
+
+// Define the hash table for storing barcodes (CB tags) with an index to array, 
+KHASH_MAP_INIT_INT64(bc_hash_t,bc_anno_t) //converting bc to integer, 32 bits should be enough but usign 64 for longer BC, and for the combined. 
+
+
 //encodes A,C,G,T in binary 00, 01, 10, 11
 int encodeACGT(char c){
   c=c&0xDF; // 11011111 sets letter to uppercase
@@ -76,8 +83,8 @@ unsigned long int packKmer(char *s,int k){
   }
   return kmer;
 }
-*/
 
+/*
 // It don't think this is faster than the option above. but I wanted to try. 
 unsigned long int packKmer(char *s, int k) {
   static const int encoding[128] = {
@@ -88,13 +95,13 @@ unsigned long int packKmer(char *s, int k) {
   for (int j = 0; j < k; ++j) {
     char c = s[j] & 0xDF; // Convert to uppercase
     if (c != 'A' && c != 'C' && c != 'G' && c != 'T') {
-      //return 0xFFFFFFFFFFFFFFFF;
+      //return 0xFFFFFFFFFFFFFFFF;  // I don't hink I can't comment this thing out. 
     }
     kmer = (kmer << 2) | encoding[c]; // Use bitwise OR for slight optimization
   }
   return kmer;
 }
-
+*/
 
 void unPackKmer(unsigned long int kmer,int k,char *s){
   int j;
@@ -103,7 +110,7 @@ void unPackKmer(unsigned long int kmer,int k,char *s){
     s[j]=ACGT[(kmer & 0x03)];
     kmer=(kmer>>2);
   }
-  s[k]='\0';
+  s[k]='\0'; //string end. 
 }
 
 
@@ -121,7 +128,11 @@ khash_t(bc_hash_t) *load_barcodes(char *filename) {
         line[strcspn(line, "\n")] = 0; // Remove newline character
         k = kh_put(bc_hash_t, hbc, packKmer(line,16), &ret); // Need to add logic for different size BC
 	assert(ret>0); // Making sure the key is not there. No repeats allowed.
-	kh_val(hbc, k)=i++;  //This is the bc_index for later. 
+	kh_val(hbc, k).bc_index=i++;  //This is the bc_index for later. 
+	kh_val(hbc, k).kmer= packKmer(line,16);
+	if(i<10){
+	  fprintf(stderr,"%d,%lu,%lu,%s\n",i,k,packKmer(line,16),line);
+	}
     }
     //    fclose(fp);
     gzclose(fp);
@@ -333,9 +344,14 @@ int main(int argc, char *argv[]) {
     //Traverse the hash to save the kmer of CB?
     for (khint64_t k = kh_begin(hbc); k != kh_end(hbc); ++k)  // traverse
       if (kh_exist(hbc, k))            // test if a bucket contains data
-	bc_kmer[kh_val(hbc,k)]=k;
-       
-    
+	bc_kmer[kh_val(hbc,k).bc_index]= kh_val(hbc, k).kmer;
+
+    char kmerstr[20];
+    for(i=0;i<10;i++){
+      unPackKmer(bc_kmer[i],16,kmerstr);
+      fprintf(stderr,"%d,%lu,%s\n",i,bc_kmer[i],kmerstr);
+    }
+
     int snpcnt=0;
 
     for (i = 0; i < nbcs; i++) bc_count_snps[i]=0;
@@ -470,9 +486,11 @@ int main(int argc, char *argv[]) {
 	    k = kh_put(bc_info_hash_t, cb_h, kmer , &ret); // Add it to the hash table
 	    assert(ret>=0);
 	    if(ret>0){ 
-	      kh_val(cb_h,k).bc_index=kh_val(hbc,kcb);
+	      assert(kmer==kh_val(hbc,kcb).kmer); // otherwise hash maybe corrupted for the key.  
+	      kh_val(cb_h,k).bc_index=kh_val(hbc,kcb).bc_index;
 	      kh_val(cb_h,k).ref_count=0;
 	      kh_val(cb_h,k).alt_count=0;
+	      kh_val(cb_h,k).kmer=kmer;
 	    }
 
 	    // Check if we have already processed this CB+UB combination... May need to pass paramters for length. 
@@ -519,8 +537,8 @@ int main(int argc, char *argv[]) {
 		int N=kh_val(cb_h,k).ref_count + kh_val(cb_h,k).alt_count;
 #pragma omp critical
 		bc_count_umis[kh_val(cb_h,k).bc_index]+= N; // Increase number of UMIs in SNPs seen for this barcode. 		
-		float val = kh_val(cb_h,k).alt_count - alf * (float)N;
-		//		float val = kh_val(cb_h,k).alt_count/(float)N - alf; // This may work better. 
+		//float val = kh_val(cb_h,k).alt_count - alf * (float)N;
+		float val = kh_val(cb_h,k).alt_count/(float)N - alf; // This may work better. 
 		//Loop across individuals for a barcode. 
 		for(int ii = 0; ii < nsmpl; ++ii)
 		  //The weight could be pre-calculated based on alf and dosage for each sample. dosage becomes the wight
@@ -575,7 +593,7 @@ int main(int argc, char *argv[]) {
 
       for (j = 0; j < nsmpl; j++) {
         order[j].index = j ;  // Store the index
-        order[j].value = bc_mat_dlda[ i * nsmpl + j ] / bc_count_umis[i];  // Store the corresponding value
+        order[j].value = bc_mat_dlda[ i * nsmpl + j ] / bc_count_snps[i];  // Store the corresponding value
       }
 
       // Sort using 
@@ -583,16 +601,19 @@ int main(int argc, char *argv[]) {
 
       // Determine if singlet, doublet or M-let. 
       kletindex=0; 
-      kletvalmax=order[0].value;
-      kletval=order[0].value;
+      kletvalmax=order[0].value; // Maybe start w/ 0
+      kletval=order[0].value; 
       for (j = 1; j < nsmpl; j++) {
 	kletval += order[j].value;
 	if(kletvalmax < 1/sqrt(j+1)*kletval){
 	  kletvalmax = 1/sqrt(j+1)*kletval;
 	  kletindex = j;
 	}
-	if((order[j].value < 0) || (kletindex>12))
+	if(kletindex>12){
 	  kletindex=13;
+	  break;
+	}
+	if(order[j].value < 0)
 	  break;
       }
 
