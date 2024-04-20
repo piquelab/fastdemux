@@ -177,6 +177,7 @@ int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
   return -1; // Reference position is not covered by the read
 }
 
+// Setting for long options. 
 static ko_longopt_t longopts[] = {
   { "min-qual-score", ko_required_argument, 301 },
   { "min-base-qual",  ko_required_argument, 302 },
@@ -346,6 +347,7 @@ int main(int argc, char *argv[]) {
       if (kh_exist(hbc, k))            // test if a bucket contains data
 	bc_kmer[kh_val(hbc,k).bc_index]= kh_val(hbc, k).kmer;
 
+    // Verifying first 10 barcodes for debugging. 
     char kmerstr[20];
     for(i=0;i<10;i++){
       unPackKmer(bc_kmer[i],16,kmerstr);
@@ -580,7 +582,7 @@ int main(int argc, char *argv[]) {
     //Make header
     //AAAAAAAAAATCGACC-1      339     202     431     1       0.690469        0.690469        AL-001  0.146772        AL-190  0.041283        AL-064 
     //    gzprintf(fp,"\t%d\t%d\t%f\t%s\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i]
-    gzprintf(fp,"BARCODE\tbcnum\tNsnp\tNumi\tDropType\tComboScore\tBestScore\tBestSample\tSecondBestScore\tSecondBestSample\tThirdBestScore\tThirdBestSample\n");
+    gzprintf(fp,"BARCODE\tbcnum\tNsnp\tNumi\tDropType\tKletScore\tBestScore\tBestSample\tSecondBestScore\tSecondBestSample\tThirdBestScore\tThirdBestSample\n");
     for(i = 0; i<nbcs; i++){
       pair_t order[nsmpl];
       float kletval,kletvalmax; 
@@ -600,8 +602,8 @@ int main(int argc, char *argv[]) {
       ks_mergesort(pair, nsmpl, order, 0);
 
       // Determine if singlet, doublet or M-let. 
-      kletindex=0; 
-      kletvalmax=order[0].value; // Maybe start w/ 0
+      kletindex=2; 
+      kletvalmax=0; //order[0].value; // Maybe start w/ 0
       kletval=order[0].value; 
       for (j = 1; j < nsmpl; j++) {
 	kletval += order[j].value;
@@ -609,13 +611,15 @@ int main(int argc, char *argv[]) {
 	  kletvalmax = 1/sqrt(j+1)*kletval;
 	  kletindex = j;
 	}
-	if(kletindex>12){
-	  kletindex=13;
+	if(kletindex>15){
+	  kletindex=16;
 	  break;
 	}
 	if(order[j].value < 0)
 	  break;
       }
+      if(kletvalmax<order[0].value) //Determine if best model is singlet. 
+	kletindex=0;
 
       // Consdier unpacking the kmer unPackKmer(unsigned long int kmer,int k,char *s) but I need the kmer stored in an array....
       // bc_kmer[i] has the kmer packed. 
