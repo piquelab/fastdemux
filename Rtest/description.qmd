@@ -1,5 +1,5 @@
 ---
-title: "FastDemux"
+title: "Fastdemux"
 author: "Roger Pique-regi"
 format: revealjs
 editor: visual
