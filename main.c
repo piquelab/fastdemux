@@ -13,6 +13,8 @@
 
 #include <omp.h>
 
+#define VERSION "0.1.0"
+
 // Define the hash table for storing barcodes (CB tags) with an index to array
 // KHASH_MAP_INIT_STR(barcode,int)  //  decomissioning this
 
@@ -20,6 +22,8 @@
 #define BAM_BUFF_SIZE 4
 #define OMP_THREADS 12
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
 
 // Define a structure to hold the value with its index for sorting
 typedef struct {
@@ -184,6 +188,7 @@ static ko_longopt_t longopts[] = {
   { "num-threads",  ko_required_argument, 303 },
   { "max-var", ko_required_argument, 304 },
   { "max-snps", ko_required_argument, 305 },
+  //  { "output-dlda", ko_no_argument, 306},
   { NULL, 0, 0 } // End marker
 };
 
@@ -193,6 +198,9 @@ int main(int argc, char *argv[]) {
     ketopt_t opt = KETOPT_INIT;
     float max_var = 0.1;
     int c, min_qual_score = 20, min_base_qual = 13, num_threads = OMP_THREADS, max_snps=0; // default values
+    // int output_dlda =0;
+
+    fprintf(stderr, "fastdemux version %s\n",VERSION);
     while ((c = ketopt(&opt, argc, argv, 1, "q:b:t:", longopts)) >= 0) {
       switch(c){
       case 'q':
@@ -338,9 +346,22 @@ int main(int argc, char *argv[]) {
     assert(bc_count_umis != NULL);
     float *bc_mat_dlda = (float *)malloc(nsmpl * nbcs * sizeof(float)); //Matrix nbcs rows and nsmpl columns, to store DLDA results.  
     assert(bc_mat_dlda != NULL);
- 
+
     unsigned long int *bc_kmer = (unsigned long int *) malloc(nbcs * sizeof(unsigned long int)); 
     assert(bc_kmer != NULL);
+
+    //To calculate correlation on genetic dosage between samples. We could consider calculating the kinship coefficient instead. 
+    int npairs = nsmpl * (nsmpl+1) / 2; 
+    float *corpairs = (float *)malloc(npairs * sizeof(float));
+    float **cormat = (float **)malloc(nsmpl * sizeof(float *)); // To be defined as upper triangular matrix... Keep always j<=i
+    assert(corpairs != NULL);
+    assert(cormat != NULL);
+    int kk=0;
+    for(int ii=0;ii<nsmpl;ii++){
+      cormat[ii]=&corpairs[kk];
+      for(int jj=0;jj<=ii;jj++)
+	corpairs[kk++] = 0; 
+    }
 
     //Traverse the hash to save the kmer of CB?
     for (khint64_t k = kh_begin(hbc); k != kh_end(hbc); ++k)  // traverse
@@ -355,10 +376,13 @@ int main(int argc, char *argv[]) {
     }
 
     int snpcnt=0;
+    int snpcntused=0;
 
+    //Initialize snp/umi count per barcode, and dlda matrix, and correlation matrix.
     for (i = 0; i < nbcs; i++) bc_count_snps[i]=0;
     for (i = 0; i < nbcs; i++) bc_count_umis[i]=0;
     for (i = 0; i < nbcs*nsmpl; i++) bc_mat_dlda[i]=0.0;
+
 
     //buffer rec for multithreaded. 
     bcf1_t *rec[BAM_BUFF_SIZE*num_threads];
@@ -423,10 +447,6 @@ int main(int argc, char *argv[]) {
 	  continue; 
 	}
 	
-	//using dosage array to store the DLDA weights. 
-	for (int ii = 0; ii < nsmpl; ii++)    
-	  dosages[ii] = (dosages[ii] - 2.0 * alf) / (SQRT2 * alf * (1-alf));
-
 
 	////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////
@@ -438,6 +458,15 @@ int main(int argc, char *argv[]) {
 	hts_itr_t *iter = sam_itr_queryi(bam_idx[jj], rec[jj]->rid, rec[jj]->pos, rec[jj]->pos + 1);
 	if (iter != NULL){
 	  //           fprintf(stderr,"iter not null\n");
+
+	  //Moved this inside iter, as no need to calculate DLDA weights if iter is NULL. 
+	  //using dosage array to store the DLDA weights. 
+	  float *weights=(float *)malloc(nsmpl * sizeof(float));
+	  assert(weights!=NULL);
+	  for (int ii = 0; ii < nsmpl; ii++)
+	    weights[ii] = (dosages[ii] - 2.0 * alf) / (SQRT2 * alf * (1-alf));
+
+
 	  // Assuming `barcodes` is a khash_t(barcode)* containing valid CB tags
 	  // and `reads_hash` is a khash_t(barcode)* used to track unique CB+UB combinations
 	  khash_t(bc_info_hash_t) *cb_h = kh_init(bc_info_hash_t); // Hash table for counting reads for CB with unique UMI
@@ -544,13 +573,27 @@ int main(int argc, char *argv[]) {
 		//Loop across individuals for a barcode. 
 		for(int ii = 0; ii < nsmpl; ++ii)
 		  //The weight could be pre-calculated based on alf and dosage for each sample. dosage becomes the wight
-		  // weigths: dosage[i] = ((dosages[i] - 2 * alf) / (SQRT2 * alf * (1-alf)))
+		  // weights: dosage[i] = ((dosages[i] - 2 * alf) / (SQRT2 * alf * (1-alf)))
 #pragma omp critical
-		  bc_mat_dlda[ (kh_val(cb_h,k).bc_index * nsmpl) + ii ] += dosages[ii] * val;
-	      }
+		  bc_mat_dlda[ (kh_val(cb_h,k).bc_index * nsmpl) + ii ] += weights[ii] * val;
+	      }// If reads. 
       // Clear the reads hash table for the next SNP
 	  kh_destroy(bc_hash_t, cb_ub_h);
 	  kh_destroy(bc_info_hash_t, cb_h);
+	  free(weights);
+	}//iter if
+
+
+	if ((ref_count > 0 || alt_count > 0) && (alf > 0.01)) {
+	  //	  int kk=0;
+#pragma omp critical
+	  {
+	    for(int ii=0; ii < nsmpl; ii++)
+	      for(int jj=0; jj <= ii; jj++)
+		cormat[ii][jj] += ((dosages[ii] - 2.0 *alf) * (dosages[jj] - 2.0 *alf)) / (2 * alf * (1-alf));
+	      //  corpairs[kk++] += ((dosages[ii] - 2.0 *alf) * (dosages[jj] - 2.0 *alf)) / (2 * alf * (1-alf));
+	    snpcntused++;
+	  }//omp critical
 	}
 
 	//Cleaning up. 
@@ -568,17 +611,40 @@ int main(int argc, char *argv[]) {
       }// for omp rec vcf
     }//while(1) bcf
 
+    fprintf(stderr,"Processed %d SNPs\n",snpcnt);
+    fprintf(stderr,"Processed %d SNPs with >0 umis\n",snpcntused);
+
+    strcpy(filename, output_prefix); // Copy the prefix into filename
+    strcat(filename, ".corr.txt.gz"); // Append the extension to filename 
+    fprintf(stderr," Writing ouput file:  %s\n",filename);
+    gzFile fp = gzopen(filename, "w");
+    gzprintf(fp,"Sample1\tSample2\tCorrelation\n");
+    for(int ii=0;ii<nsmpl;ii++)
+      for(int jj=0;jj<=ii;jj++){
+	cormat[ii][jj] /= (float)snpcntused;
+	gzprintf(fp,"%s\t%s\t%f\n",vcf_hdr->samples[ii],vcf_hdr->samples[jj],cormat[ii][jj]);
+	if(cormat[ii][jj]>0.15 && (ii!=jj))
+	  fprintf(stderr,"WARNING: Correlation: %f, %s, %s, %d, %d\n",cormat[ii][jj],vcf_hdr->samples[ii],vcf_hdr->samples[jj],ii,jj); 
+      }
+    gzclose(fp);
+    
+
+
+
+
+    int *bc_smpl_count = (int *) malloc(nsmpl * sizeof(int));
+    for(i=0 ; i<nsmpl; i++)
+      bc_smpl_count[i]=0;
 
     ////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////
     /////    Print BC/SNP/UMI information and results     //////
     ////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////
-    fprintf(stderr,"Processed %d SNPs\n",snpcnt);
     strcpy(filename, output_prefix); // Copy the prefix into filename
     strcat(filename, ".info.txt.gz"); // Append the extension to filename 
     fprintf(stderr," Writing ouput file:  %s\n",filename);
-    gzFile fp = gzopen(filename, "w");
+    fp = gzopen(filename, "w");
     //Make header
     //AAAAAAAAAATCGACC-1      339     202     431     1       0.690469        0.690469        AL-001  0.146772        AL-190  0.041283        AL-064 
     //    gzprintf(fp,"\t%d\t%d\t%f\t%s\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i]
@@ -600,15 +666,130 @@ int main(int argc, char *argv[]) {
 
       // Sort using 
       ks_mergesort(pair, nsmpl, order, 0);
+      
+      // Count droplet assigned to individual.
+      if(bc_count_umis[i]>=100 && bc_count_snps[i]>=100)
+	bc_smpl_count[order[0].index]++;
 
+      // Correct for relatedness....
+      int ii=0, jj=0;
+      float rhomult=1;
+      if(order[0].index < order[1].index){
+	ii = order[1].index;
+	jj = order[0].index;
+      }else{
+	ii = order[0].index;
+	jj = order[1].index;	
+      }
+      if(cormat[ii][jj]>0.1)
+	rhomult=1/sqrt(1+cormat[ii][jj]);      
       // Determine if singlet, doublet or M-let. 
       kletindex=2; 
       kletvalmax=0; //order[0].value; // Maybe start w/ 0
       kletval=order[0].value; 
       for (j = 1; j < nsmpl; j++) {
-	kletval += order[j].value;
-	if(kletvalmax < 1/sqrt(j+1)*kletval){
-	  kletvalmax = 1/sqrt(j+1)*kletval;
+	kletval += order[j].value; 
+	float aux=rhomult/sqrt(j+1)*kletval;  // add correlation value, but I have to be able to index it. 
+	if(kletvalmax < aux){
+	  kletvalmax = aux;
+	  kletindex = j;
+	}
+	if(kletindex>15){
+	  kletindex=16;
+	  break;
+	}
+	if(order[j].value < 0)
+	  break;
+      }
+      if(kletvalmax<order[0].value) //Determine if best model is singlet. 
+	kletindex=0;
+
+      // Consdier unpacking the kmer unPackKmer(unsigned long int kmer,int k,char *s) but I need the kmer stored in an array....
+      // bc_kmer[i] has the kmer packed. 
+      unPackKmer(bc_kmer[i],16,kmerstring);
+      
+      gzprintf(fp,"%s-1\t%d\t%d\t%d\t%d\t%f\t%f\t%s\t%f\t%s\t%f\t%s\n",kmerstring,i,bc_count_snps[i],bc_count_umis[i]
+	       ,kletindex+1,kletvalmax
+	       ,order[0].value,vcf_hdr->samples[order[0].index]
+	       ,order[1].value,vcf_hdr->samples[order[1].index]
+	       ,order[2].value,vcf_hdr->samples[order[2].index]
+	       );
+    }
+    gzclose(fp);
+
+    ///////////////////////////////////////////////////
+    //// summarize individuals with most droplets  ////
+    ///////////////////////////////////////////////////
+    float *bc_smpl_pct = (float *) malloc(nsmpl * sizeof(float));
+    int totaldroplets=0;
+    for(i=0 ; i<nsmpl; i++)
+      totaldroplets += bc_smpl_count[i];
+    fprintf(stderr,"Invividuals with more >10 droplets that have more than 100 SNPs/UMIs\n");
+    for(i=0 ; i<nsmpl; i++){
+      bc_smpl_pct[i] = bc_smpl_count[i] / (float)totaldroplets;
+      if(bc_smpl_count[i]>10)
+	fprintf(stderr,"%s,%d,%f\n",vcf_hdr->samples[i],bc_smpl_count[i],bc_smpl_pct[i]*100.0);
+    }
+    // Second pass after prior update, would only consider a subset of samples to be more likely. 
+
+
+    ////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
+    /////    2nd PASS Print BC/SNP/UMI results            //////
+    ////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
+    strcpy(filename, output_prefix); // Copy the prefix into filename
+    strcat(filename, ".info.2nd.txt.gz"); // Append the extension to filename 
+    fprintf(stderr," Writing ouput file:  %s\n",filename);
+    fp = gzopen(filename, "w");
+    //Make header
+    //AAAAAAAAAATCGACC-1      339     202     431     1       0.690469        0.690469        AL-001  0.146772        AL-190  0.041283        AL-064 
+    //    gzprintf(fp,"\t%d\t%d\t%f\t%s\t%f\t%s\t%f\t%s\n",i,bc_count_snps[i],bc_count_umis[i]
+    gzprintf(fp,"BARCODE\tbcnum\tNsnp\tNumi\tDropType\tKletScore\tBestScore\tBestSample\tSecondBestScore\tSecondBestSample\tThirdBestScore\tThirdBestSample\n");
+    for(i = 0; i<nbcs; i++){
+      pair_t order[nsmpl];
+      float kletval,kletvalmax; 
+      int kletindex; 
+      char kmerstring[32]; //long enough to hold the CB barcode. 
+      
+      // Not reporting droplets with <100 UMIs or <100SNPs. 
+      if(bc_count_umis[i]<100 || bc_count_snps[i]<100)
+	continue;
+      
+      for (j = 0; j < nsmpl; j++) {
+        order[j].index = j ;  // Store the index
+	if(bc_smpl_pct[j] >= 0.01)
+	  order[j].value = bc_mat_dlda[ i * nsmpl + j ] / bc_count_snps[i];  // Store the corresponding value
+	else
+	  order[j].value = -0.01;
+      }
+      // Sort using 
+      ks_mergesort(pair, nsmpl, order, 0);
+ 
+      // Count droplet assigned to individual.
+      //      if(bc_count_umis[i]>=100 && bc_count_snps[i]>=100)
+      //	bc_smpl_count[order[0].index]++;
+      // Correct for relatedness....
+      int ii=0, jj=0;
+      float rhomult=1;
+      if(order[0].index < order[1].index){
+	ii = order[1].index;
+	jj = order[0].index;
+      }else{
+	ii = order[0].index;
+	jj = order[1].index;	
+      }
+      if(cormat[ii][jj]>0.1)
+	rhomult=1/sqrt(1+cormat[ii][jj]);      
+      // Determine if singlet, doublet or M-let. 
+      kletindex=2; 
+      kletvalmax=0; //order[0].value; // Maybe start w/ 0
+      kletval=order[0].value; 
+      for (j = 1; j < nsmpl; j++) {
+	kletval += order[j].value; 
+	float aux=rhomult/sqrt(j+1)*kletval;  // add correlation value, but I have to be able to index it. 
+	if(kletvalmax < aux){
+	  kletvalmax = aux;
 	  kletindex = j;
 	}
 	if(kletindex>15){
@@ -635,6 +816,9 @@ int main(int argc, char *argv[]) {
     gzclose(fp);
 
 
+    /////////////////////////////////
+    //// Print full DLDA matrix  ////
+    /////////////////////////////////
     // maybe not always necessary, maybe use an option to see if we want to print. 
     strcpy(filename, output_prefix); // Copy the prefix into filename
     strcat(filename, ".dlda.txt.gz"); // Append the extension to filename 
@@ -663,6 +847,11 @@ int main(int argc, char *argv[]) {
     free(bc_count_umis); 
     free(bc_mat_dlda); 
     free(bc_kmer);
+    free(corpairs);
+    free(cormat);
+    free(bc_smpl_count);
+    free(bc_smpl_pct);
+
     bcf_close(vcf_fp);
     kh_destroy(bc_hash_t, hbc);
 
