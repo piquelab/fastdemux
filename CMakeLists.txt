@@ -30,12 +30,12 @@ include_directories(${ZLIB_INCLUDE_DIRS})
 
 # Define executables
 add_executable(fastdemux fastdemux.c common.c)
-##add_executable(fastqase fastqase.c common.c)
+add_executable(fastaseq fastaseq.c common.c)
 
 
 # Link htslib
 target_link_libraries(fastdemux PUBLIC hts m OpenMP::OpenMP_C ${ZLIB_LIBRARIES})
-##target_link_libraries(fastqase PUBLIC hts m OpenMP::OpenMP_C ${ZLIB_LIBRARIES})
+target_link_libraries(fastaseq PUBLIC hts m OpenMP::OpenMP_C ${ZLIB_LIBRARIES})
 
 
 # Set Debug and Release configuration flags
@@ -47,4 +47,4 @@ set(CMAKE_INSTALL_PREFIX "/wsu/home/groups/piquelab/apps/el7/misc/")
 # Specify the install rules
 install(TARGETS fastdemux DESTINATION bin)
 # Specify the install rules
-##install(TARGETS fastdemux fastqase DESTINATION bin)
+##install(TARGETS fastdemux fastaseq DESTINATION bin)
