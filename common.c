@@ -61,3 +61,42 @@ void unPackKmer(unsigned long int kmer,int k,char *s){
   s[k]='\0'; //string end. 
 }
 
+
+
+int find_read_index_for_ref_pos(const bam1_t *aln, int ref_pos) {
+  uint32_t *cigar = bam_get_cigar(aln);
+  int read_pos = 0; // Position in the read
+  int ref_pos_aligned = aln->core.pos; // Aligned position in the reference
+
+  for (uint32_t i = 0; i < aln->core.n_cigar; ++i) {
+    int op = cigar[i] & BAM_CIGAR_MASK;
+    int len = cigar[i] >> BAM_CIGAR_SHIFT;
+
+    // Optimization for deletion and reference skip
+    if ((op == BAM_CDEL || op == BAM_CREF_SKIP) && ref_pos_aligned + len > ref_pos) {
+      return -1; // Reference position falls within a deletion or skip
+    }
+    switch (op) {
+    case BAM_CMATCH:
+    case BAM_CEQUAL:
+    case BAM_CDIFF:
+      if (ref_pos_aligned + len > ref_pos) {
+	return read_pos + (ref_pos - ref_pos_aligned);
+      }
+      read_pos += len;
+      ref_pos_aligned += len;
+      break;
+    case BAM_CINS:
+    case BAM_CSOFT_CLIP:
+      read_pos += len;
+      break;
+    case BAM_CDEL:
+    case BAM_CREF_SKIP:
+      ref_pos_aligned += len;
+      break;
+    default:
+      break;
+    }
+  }
+  return -1; // Reference position is not covered by the read
+}
