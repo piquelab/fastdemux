@@ -73,7 +73,7 @@ khash_t(bc_hash_t) *load_barcodes(char *filename,khash_t(sample_hash_t) *sample_
       //      kh_val(hbc, k).bc_index = i++;  // This is the bc_index for later. maybe not needed here. 
       kh_val(hbc, k).kmer = packKmer(barcode, 16); //Integer version of the kmer.
       kh_val(hbc, k).sample_index = kh_val(sample_map, s);  // Store the sample index from the sample map
-      if(i<10){
+      if(i++ < 10){
 	fprintf(stderr,"%d,%lu,%lu,%d,%s\n",i,k,kh_val(hbc, k).kmer,kh_val(hbc, k).sample_index,line);
       }
     }
@@ -448,25 +448,36 @@ int main(int argc, char *argv[]) {
 	  //////////////////////////////////////////////////////////////////////////////////
 	  //////////////////////////////////////////////////////////////////////////////////
 	  //Traversing the barcode hash table with the allele counts for the current SNP. 
+	  int32_t *genotype_array = NULL;  // Array to hold the genotype indices
+	  int n_genotype = 0;  // The number of elements in the genotype array
+	  
+	  assert(bcf_get_genotypes(vcf_hdr, rec[jj], &genotype_array, &n_genotype) >0);
+	  assert(n_genotype = nsmpl *2); // asserts ploidy 2
+
 	  for (khint64_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
 	    if (kh_exist(cb_h, k))            // test if a bucket contains data
 	      if ((kh_val(cb_h,k).ref_count > 0) || (kh_val(cb_h,k).alt_count > 0)) {
 		// If we want to write a pileup. 
 		// You may want to write this information to a file instead of printing it. This will allow for ASE calculations down the line. 
 		// But it maybe better to just do it on heterozygote genotypes as a second pass once we determine the (bc,individual) pairs. 
-		//    printf("--%s\t%d\t%s\t%f\t%d\t%d\t%d\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec->rid), pos, rec->d.id, alf, ref_count, alt_count, 
-		// 	   kh_val(cb_h,k).bc_index, kh_val(cb_h,k).ref_count,kh_val(cb_h,k).alt_count);
-
 		// 	    if( genotype_probs[(kh_val(hbc,kcb).sample_index)*3 + 1] < 0.99) continue; // Only count for samples/barcodes with het SNP. 
-
-		printf("--%s\t%d\t%s\t%f\t%d\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), pos, rec[jj]->d.id, alf,
-		       kh_val(cb_h,k).sample_index, // Also get sample string, and kmer and kmer string. 
+		char kmerstr[20];
+		unPackKmer(kh_val(cb_h,k).kmer,16,kmerstr);
+		printf("%s\t%d\t%s\t%f\t%d%s%d\t%d\t%s\t%lu\t%s\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), pos, rec[jj]->d.id, 
+		       genotype_probs[(kh_val(cb_h,k).sample_index)*3 + 1],
+		       bcf_gt_allele(genotype_array[kh_val(cb_h,k).sample_index * 2]),   //bcf_gt_allele(
+		       bcf_gt_is_phased(genotype_array[kh_val(cb_h,k).sample_index * 2 + 1]) ? "|" : "/",
+		       bcf_gt_allele(genotype_array[kh_val(cb_h,k).sample_index * 2 + 1]),
+		       kh_val(cb_h,k).sample_index, // Also get sample string, and kmer and kmer string.
+		       vcf_hdr->samples[kh_val(cb_h,k).sample_index],		       
+		       kh_val(cb_h,k).kmer, //kmer integer lu?
+		       kmerstr,//kmer string
 		       kh_val(cb_h,k).ref_count,kh_val(cb_h,k).alt_count); //Last two columns are allelic counts. 
-
 	      }// If reads. 
 	  // Clear the reads hash table for the next SNP
 	  kh_destroy(bc_hash_t, cb_ub_h);
 	  kh_destroy(bc_info_hash_t, cb_h);
+	  free(genotype_array);
 	}//iter if
 
 	//Cleaning up. 
