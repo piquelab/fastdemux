@@ -1,5 +1,3 @@
-#define _GNU_SOURCE  //Needed for asprintf consider replaing with sprintf if asprintf not available.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <htslib/sam.h>
@@ -287,9 +285,6 @@ int main(int argc, char *argv[]) {
     for(j=0;j<BAM_BUFF_SIZE*num_threads; j++)
       rec[j] = bcf_init();
 
-    char** outbuffer = malloc(BAM_BUFF_SIZE*num_threads * sizeof(char*));
-    assert(outbuffer!=NULL);
-
     ////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////
     //////////          VCF LOOP                    ////////////
@@ -312,8 +307,6 @@ int main(int argc, char *argv[]) {
       //schedule(dynamic)
 #pragma omp parallel for 
       for(int jj=0;jj<j;jj++){
-
-	outbuffer[jj]=NULL; //Empty slot
 
 	if (bcf_unpack(rec[jj], BCF_UN_STR) < 0) continue; // Unpack the current VCF record
 
@@ -400,7 +393,7 @@ int main(int argc, char *argv[]) {
 	    khint64_t kcb = kh_get(bc_hash_t, hbc, kmer);
 	    if (kcb == kh_end(hbc)) continue; // Skip if CB not found among valid barcodes 
 	    // Could also check if het individuals here or later?
-	    if( genotype_probs[(kh_val(hbc,kcb).sample_index)*3 + 1] < min_het_prob) continue; // Only count for samples/barcodes with het SNP. 
+	    if( genotype_probs[(kh_val(hbc,kcb).sample_index)*3 + 1] < 0.99) continue; // Only count for samples/barcodes with het SNP. 
 
 	    // Extract UB tag (unique molecular identifier)  
 	    uint8_t *ub_ptr = bam_aux_get(b, "UB");  // Maybe parameter for this. 
@@ -470,9 +463,7 @@ int main(int argc, char *argv[]) {
 		// 	    if( genotype_probs[(kh_val(hbc,kcb).sample_index)*3 + 1] < 0.99) continue; // Only count for samples/barcodes with het SNP. 
 		char kmerstr[20];
 		unPackKmer(kh_val(cb_h,k).kmer,16,kmerstr);
-		asprintf(&outbuffer[jj],"%s\t%d\t%s\t%f\t%d%s%d\t%d\t%s\t%lu\t%s\t%d\t%d\n",
-			 //		printf("%s\t%d\t%s\t%f\t%d%s%d\t%d\t%s\t%lu\t%s\t%d\t%d\n", 
-		       bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), pos, rec[jj]->d.id, 
+		printf("%s\t%d\t%s\t%f\t%d%s%d\t%d\t%s\t%lu\t%s\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), pos, rec[jj]->d.id, 
 		       genotype_probs[(kh_val(cb_h,k).sample_index)*3 + 1],
 		       bcf_gt_allele(genotype_array[kh_val(cb_h,k).sample_index * 2]),   //bcf_gt_allele(
 		       bcf_gt_is_phased(genotype_array[kh_val(cb_h,k).sample_index * 2 + 1]) ? "|" : "/",
@@ -494,14 +485,6 @@ int main(int argc, char *argv[]) {
 	free(dosages);
 	free(genotype_probs);
       }// for omp rec vcf
-      // Sequentially print results
-      for(int jj=0;jj<j;jj++){
-	if(outbuffer[jj]!=NULL){
-	  snpcntused++;
-	  printf("%s", outbuffer[jj]);
-	  free(outbuffer[jj]);  // Don't forget to free the allocated strings!
-	}
-      }
     }//while(1) bcf
 
 
@@ -512,8 +495,7 @@ int main(int argc, char *argv[]) {
 
     // Final Clean up
     fprintf(stderr, "Closing everything \n");
-    
-    free(outbuffer);
+
     //    free(bc_kmer);
 
     bcf_close(vcf_fp);
