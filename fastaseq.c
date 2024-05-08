@@ -462,15 +462,20 @@ int main(int argc, char *argv[]) {
 		// But it maybe better to just do it on heterozygote genotypes as a second pass once we determine the (bc,individual) pairs. 
 		// 	    if( genotype_probs[(kh_val(hbc,kcb).sample_index)*3 + 1] < 0.99) continue; // Only count for samples/barcodes with het SNP. 
 		char kmerstr[20];
-		unPackKmer(kh_val(cb_h,k).kmer,16,kmerstr);
-		printf("%s\t%d\t%s\t%f\t%d%s%d\t%d\t%s\t%lu\t%s\t%d\t%d\n", bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), pos, rec[jj]->d.id, 
+		unPackKmer(kh_val(cb_h,k).kmer,16,kmerstr); 
+#pragma omp critical
+		printf("%s\t%d\t%s"
+		       "\t%f\t%d%s%d"
+		       "\t%s\t%s"
+		       "\t%d\t%d\n", 
+		       bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), pos, rec[jj]->d.id, 
 		       genotype_probs[(kh_val(cb_h,k).sample_index)*3 + 1],
 		       bcf_gt_allele(genotype_array[kh_val(cb_h,k).sample_index * 2]),   //bcf_gt_allele(
 		       bcf_gt_is_phased(genotype_array[kh_val(cb_h,k).sample_index * 2 + 1]) ? "|" : "/",
 		       bcf_gt_allele(genotype_array[kh_val(cb_h,k).sample_index * 2 + 1]),
-		       kh_val(cb_h,k).sample_index, // Also get sample string, and kmer and kmer string.
+		       // kh_val(cb_h,k).sample_index, // Also get sample string, and kmer and kmer string.
 		       vcf_hdr->samples[kh_val(cb_h,k).sample_index],		       
-		       kh_val(cb_h,k).kmer, //kmer integer lu?
+		       // kh_val(cb_h,k).kmer, //kmer integer lu?
 		       kmerstr,//kmer string
 		       kh_val(cb_h,k).ref_count,kh_val(cb_h,k).alt_count); //Last two columns are allelic counts. 
 	      }// If reads. 
