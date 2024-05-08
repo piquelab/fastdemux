@@ -280,6 +280,7 @@ int main(int argc, char *argv[]) {
     int snpcntused=0;
 
 
+    fprintf(stderr,"Initializing bcf record buffer for %d\n",BAM_BUFF_SIZE*num_threads);
     //buffer rec for multithreaded. 
     bcf1_t *rec[BAM_BUFF_SIZE*num_threads];
     for(j=0;j<BAM_BUFF_SIZE*num_threads; j++)
@@ -303,6 +304,8 @@ int main(int argc, char *argv[]) {
 
       // Useful for debugging a few snps; e.g. using --max-snps 10000 option.  
       if(max_snps>0 && snpcnt>max_snps) break;  
+
+      //      fprintf(stderr,"%d %d\n",j,snpcnt);
 
       //schedule(dynamic)
 #pragma omp parallel for 
@@ -441,6 +444,7 @@ int main(int argc, char *argv[]) {
 	  }//while(bam)
 	  bam_destroy1(b); // Clean up BAM record container
 
+	  //	  fprintf(stderr,"After BAM\n");
 
 	  //////////////////////////////////////////////////////////////////////////////////
 	  //////////////////////////////////////////////////////////////////////////////////
@@ -450,9 +454,14 @@ int main(int argc, char *argv[]) {
 	  //Traversing the barcode hash table with the allele counts for the current SNP. 
 	  int32_t *genotype_array = NULL;  // Array to hold the genotype indices
 	  int n_genotype = 0;  // The number of elements in the genotype array
+	  int retg =0 ; 
 	  
-	  assert(bcf_get_genotypes(vcf_hdr, rec[jj], &genotype_array, &n_genotype) >0);
-	  assert(n_genotype = nsmpl *2); // asserts ploidy 2
+	  retg = bcf_get_genotypes(vcf_hdr, rec[jj], &genotype_array, &n_genotype);
+	  assert(retg >0 );
+	  assert(n_genotype == (nsmpl * 2)); // asserts ploidy 2
+	  
+	  //fprintf(stderr,"Debugging: %d,%d,%d\n",n_genotype,nsmpl*2,retg);
+
 
 	  for (khint64_t k = kh_begin(cb_h); k != kh_end(cb_h); ++k)  // traverse
 	    if (kh_exist(cb_h, k))            // test if a bucket contains data
@@ -462,22 +471,26 @@ int main(int argc, char *argv[]) {
 		// But it maybe better to just do it on heterozygote genotypes as a second pass once we determine the (bc,individual) pairs. 
 		// 	    if( genotype_probs[(kh_val(hbc,kcb).sample_index)*3 + 1] < 0.99) continue; // Only count for samples/barcodes with het SNP. 
 		char kmerstr[20];
+		int sample_index= kh_val(cb_h,k).sample_index;
 		unPackKmer(kh_val(cb_h,k).kmer,16,kmerstr); 
+		//	fprintf(stderr,"Traverse %lu,%s; %d,%d,%d\n",kh_val(cb_h,k).kmer,kmerstr,sample_index,n_genotype,nsmpl );
 #pragma omp critical
 		printf("%s\t%d\t%s"
-		       "\t%f\t%d%s%d"
+		       "\t%f"
+		       "\t%d%s%d"//"\t%d"//"%s%d"
 		       "\t%s\t%s"
 		       "\t%d\t%d\n", 
 		       bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), pos, rec[jj]->d.id, 
-		       genotype_probs[(kh_val(cb_h,k).sample_index)*3 + 1],
-		       bcf_gt_allele(genotype_array[kh_val(cb_h,k).sample_index * 2]),   //bcf_gt_allele(
-		       bcf_gt_is_phased(genotype_array[kh_val(cb_h,k).sample_index * 2 + 1]) ? "|" : "/",
-		       bcf_gt_allele(genotype_array[kh_val(cb_h,k).sample_index * 2 + 1]),
-		       // kh_val(cb_h,k).sample_index, // Also get sample string, and kmer and kmer string.
-		       vcf_hdr->samples[kh_val(cb_h,k).sample_index],		       
-		       // kh_val(cb_h,k).kmer, //kmer integer lu?
+		       genotype_probs[sample_index*3 + 1],
+		       bcf_gt_allele(genotype_array[sample_index * 2]),   //bcf_gt_allele(
+		       bcf_gt_is_phased(genotype_array[sample_index * 2 + 1]) ? "|" : "/",
+		       bcf_gt_allele(genotype_array[sample_index * 2 + 1]),
+		       // // sample_index, // Also get sample string, and kmer and kmer string.
+		       vcf_hdr->samples[sample_index],		       
+		       // // kh_val(cb_h,k).kmer, //kmer integer lu?
 		       kmerstr,//kmer string
-		       kh_val(cb_h,k).ref_count,kh_val(cb_h,k).alt_count); //Last two columns are allelic counts. 
+		       kh_val(cb_h,k).ref_count,
+		       kh_val(cb_h,k).alt_count); //Last two columns are allelic counts. 
 	      }// If reads. 
 	  // Clear the reads hash table for the next SNP
 	  kh_destroy(bc_hash_t, cb_ub_h);
