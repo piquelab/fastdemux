@@ -3,6 +3,11 @@
 #define COMMON_H
 
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
+
 #include <htslib/sam.h>
 
 
