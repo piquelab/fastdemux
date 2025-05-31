@@ -171,6 +171,7 @@ int main(int argc, char *argv[]) {
     khash_t(bc_hash_t) *hbc = load_barcodes(barcode_filename);
     nbcs = kh_size(hbc);
     fprintf(stderr, "Number of barcodes is: %d\n", nbcs);
+    assert(nbcs>100); // Finish early if no barcodes or a problem with barcodes is found. 
 
     // Open BAM file
     samFile *sam_fp[BAM_BUFF_SIZE * num_threads];
