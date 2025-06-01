@@ -81,6 +81,97 @@ khash_t(bc_hash_t) *load_barcodes(char *filename) {
 }
 
 
+// 
+// Function to extract dosages from DS, GP, or GT fields
+int extract_dosages(bcf_hdr_t *vcf_hdr, bcf1_t *rec, int nsmpl, float **dosages, int *nds_arr, float *alf) {
+  *dosages = NULL;
+  *nds_arr = 0;
+  *alf = 1e-5; // Small non-zero to avoid division by zero
+
+  // Try DS (dosage) field
+  if (bcf_get_format_float(vcf_hdr, rec, "DS", dosages, nds_arr) >= 0 && *dosages != NULL) {
+    for (int i = 0; i < nsmpl; i++) {
+      if (isnan((*dosages)[i]) || (*dosages)[i] < 0 || (*dosages)[i] > 2) {
+	//(*dosages)[i] = 0; // Handle invalid dosages
+	free(*dosages); // Free allocated memory
+	*dosages = NULL;
+	return -1; //better skip or think if 0 is better
+      }
+      *alf += (*dosages)[i];
+    }
+    *alf /= (nsmpl * 2.0);
+    return 0; // Success
+  }
+
+  // Try GP (genotype probabilities)
+  float *gp = NULL;
+  int ngp_arr = 0;
+  if (bcf_get_format_float(vcf_hdr, rec, "GP", &gp, &ngp_arr) >= 0 && gp != NULL) {
+    if (ngp_arr >= nsmpl * 3) { // Expect 3 probabilities per sample
+      *nds_arr = nsmpl;
+      *dosages = (float *)malloc(nsmpl * sizeof(float));
+      if (!*dosages) {
+	free(gp);
+	return -1; // Memory allocation failure
+      }
+      for (int i = 0; i < nsmpl; i++) {
+	float p00 = gp[i * 3 + 0]; // P(0/0)
+	float p01 = gp[i * 3 + 1]; // P(0/1)
+	float p11 = gp[i * 3 + 2]; // P(1/1)
+	if (isnan(p00) || isnan(p01) || isnan(p11) || p00 < 0 || p01 < 0 || p11 < 0) {
+	  //(*dosages)[i] = 0; // Invalid probabilities
+	  free(*dosages); // Free allocated memory
+	  *dosages = NULL;
+	  free(gp);
+	  return -1;
+	} else {
+	  (*dosages)[i] = 0 * p00 + 1 * p01 + 2 * p11; // Dosage
+	}
+	*alf += (*dosages)[i];
+      }
+      *alf /= (nsmpl * 2.0);
+      free(gp);
+      return 0; // Success
+    }
+    free(gp);
+  }
+
+  // Try GT (genotype)
+  int *gt = NULL;
+  int ngt_arr = 0;
+  if (bcf_get_format_int32(vcf_hdr, rec, "GT", &gt, &ngt_arr) >= 0 && gt != NULL) {
+    if (ngt_arr >= nsmpl * 2) { // Expect 2 alleles per sample
+      *nds_arr = nsmpl;
+      *dosages = (float *)malloc(nsmpl * sizeof(float));
+      if (!*dosages) {
+	free(gt);
+	return -1; // Memory allocation failure
+      }
+      for (int i = 0; i < nsmpl; i++) {
+	int g1 = bcf_gt_allele(gt[i * 2 + 0]);
+	int g2 = bcf_gt_allele(gt[i * 2 + 1]);
+	if (g1 < 0 || g2 < 0) {
+	  //(*dosages)[i] = 0; // Missing genotype
+	  free(*dosages); // Free allocated memory
+	  *dosages = NULL;
+	  free(gt); 
+	  return -1;
+	} else {
+	  (*dosages)[i] = (float)(g1 + g2); // Dosage: 0/0 -> 0, 0/1 -> 1, 1/1 -> 2
+	}
+	*alf += (*dosages)[i];
+      }
+      *alf /= (nsmpl * 2.0);
+      free(gt);
+      return 0; // Success
+    }
+    free(gt);
+  }
+
+  // No usable field found
+  return -1;
+}
+
 
 
 // Setting for long options. 
@@ -171,7 +262,11 @@ int main(int argc, char *argv[]) {
     khash_t(bc_hash_t) *hbc = load_barcodes(barcode_filename);
     nbcs = kh_size(hbc);
     fprintf(stderr, "Number of barcodes is: %d\n", nbcs);
-    assert(nbcs>100); // Finish early if no barcodes or a problem with barcodes is found. 
+    // Finish early if no barcodes or a problem with barcodes is found. 
+    if(nbcs<100){
+        fprintf(stderr, "ERROR: Check the format of the barcode file, or that is not empty.\n");
+        return 1;
+    }
 
     // Open BAM file
     samFile *sam_fp[BAM_BUFF_SIZE * num_threads];
@@ -334,13 +429,19 @@ int main(int argc, char *argv[]) {
 	float alf=1E-5; //Instead of 0 I put this so variance does not become to small and avoid division by zero. 
 	int nds_arr = 0;
 
-	if (bcf_get_format_float(vcf_hdr, rec[jj], "DS", &dosages, &nds_arr) < 0) continue;
-	
-	for (int ii = 0; ii < nsmpl; ii++) {
-	  //	fprintf(stderr,"%f ",dosages[i]);
-	  alf +=dosages[ii];
+	// Extract dosages from DS, GP, or GT
+	if (extract_dosages(vcf_hdr, rec[jj], nsmpl, &dosages, &nds_arr, &alf) < 0) {
+	  fprintf(stderr, "Warning: No DS, GP, or GT field found for SNP at %s:%d, or some indiv missing.\n",
+		  bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), pos);
+	  continue;
 	}
-	alf=alf/(nsmpl*2);
+
+	//	if (bcf_get_format_float(vcf_hdr, rec[jj], "DS", &dosages, &nds_arr) < 0) continue;	
+	//	for (int ii = 0; ii < nsmpl; ii++) {
+	//  //	fprintf(stderr,"%f ",dosages[i]);
+	//  alf +=dosages[ii];
+	//}
+	///alf=alf/(nsmpl*2);
 
 	if(snpcnt%1000==0 && jj==0) // verbose progress every 1000 SNPs approximately. 
 	  fprintf(stderr, "Processing %d: %d %s %d %c %c %f\n", snpcnt,rec[jj]->rid, bcf_hdr_id2name(vcf_hdr, rec[jj]->rid), rec[jj]->pos, ref_allele, alt_allele,alf);      
