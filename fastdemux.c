@@ -81,97 +81,109 @@ khash_t(bc_hash_t) *load_barcodes(char *filename) {
 }
 
 
-// 
 // Function to extract dosages from DS, GP, or GT fields
 int extract_dosages(bcf_hdr_t *vcf_hdr, bcf1_t *rec, int nsmpl, float **dosages, int *nds_arr, float *alf) {
   *dosages = NULL;
   *nds_arr = 0;
   *alf = 1e-5; // Small non-zero to avoid division by zero
 
-  // Try DS (dosage) field
-  if (bcf_get_format_float(vcf_hdr, rec, "DS", dosages, nds_arr) >= 0 && *dosages != NULL) {
+  // Allocate dosages array upfront
+  *nds_arr = nsmpl;
+  *dosages = (float *)malloc(nsmpl * sizeof(float));
+  if (!*dosages) {
+    return -1; // Memory allocation failure
+  }
+  // Initialize all to -1.0 (missing)
+  for (int i = 0; i < nsmpl; i++) {
+    (*dosages)[i] = -1.0;
+  }
+
+  float sum = 0.0;
+  int count = 0;
+
+  // Try DS (dosage) field first
+  float *ds = NULL;
+  int nds_temp = 0;
+  if (bcf_get_format_float(vcf_hdr, rec, "DS", &ds, &nds_temp) >= 0 && ds != NULL) {
     for (int i = 0; i < nsmpl; i++) {
-      if (isnan((*dosages)[i]) || (*dosages)[i] < 0 || (*dosages)[i] > 2) {
-	//(*dosages)[i] = 0; // Handle invalid dosages
-	free(*dosages); // Free allocated memory
-	*dosages = NULL;
-	return -1; //better skip or think if 0 is better
+      float d = ds[i];
+      if (!isnan(d) && d >= 0 && d <= 2) {
+        (*dosages)[i] = d;
+        sum += d;
+        count++;
       }
+    }
+    free(ds); // Free temp DS array
+  }
+
+  // If any still missing, try GP (genotype probabilities)
+  int missing_remain = (count < nsmpl);
+  if (missing_remain) {
+    float *gp = NULL;
+    int ngp_arr = 0;
+    if (bcf_get_format_float(vcf_hdr, rec, "GP", &gp, &ngp_arr) >= 0 && gp != NULL) {
+      if (ngp_arr >= nsmpl * 3) { // Expect 3 probabilities per sample
+        for (int i = 0; i < nsmpl; i++) {
+          if ((*dosages)[i] >= 0) continue; // Already filled
+          float p00 = gp[i * 3 + 0]; // P(0/0)
+          float p01 = gp[i * 3 + 1]; // P(0/1)
+          float p11 = gp[i * 3 + 2]; // P(1/1)
+          if (!isnan(p00) && !isnan(p01) && !isnan(p11) && p00 >= 0 && p01 >= 0 && p11 >= 0) {
+            float dose = 0 * p00 + 1 * p01 + 2 * p11; // Dosage
+            (*dosages)[i] = dose;
+            sum += dose;
+            count++;
+          }
+        }
+      }
+      free(gp);
+    }
+  }
+
+  // If still any missing, try GT (genotypes)
+  missing_remain = (count < nsmpl);
+  if (missing_remain) {
+    int *gt = NULL;
+    int ngt_arr = 0;
+    if (bcf_get_genotypes(vcf_hdr, rec, &gt, &ngt_arr) > 0 && gt != NULL) {
+      if (ngt_arr >= nsmpl * 2) { // Expect diploid (2 alleles per sample)
+        for (int i = 0; i < nsmpl; i++) {
+          if ((*dosages)[i] >= 0) continue; // Already filled
+          int allele1 = bcf_gt_allele(gt[2 * i]);
+          int allele2 = bcf_gt_allele(gt[2 * i + 1]);
+          if (allele1 >= 0 && allele2 >= 0) { // Valid alleles
+            float dose = (float)(allele1 + allele2); // Dosage (0, 1, or 2)
+            (*dosages)[i] = dose;
+            sum += dose;
+            count++;
+          }
+        }
+      }
+      free(gt);
+    }
+  }
+
+  // Now handle averaging if sufficient valid samples
+  if (count >= 2) {
+    float avg = sum / (float)count;
+    for (int i = 0; i < nsmpl; i++) {
+      if ((*dosages)[i] < 0) {
+        (*dosages)[i] = avg;
+      }
+    }
+    // Compute alf from filled dosages
+    *alf = 1e-5;
+    for (int i = 0; i < nsmpl; i++) {
       *alf += (*dosages)[i];
     }
     *alf /= (nsmpl * 2.0);
     return 0; // Success
+  } else {
+    free(*dosages);
+    *dosages = NULL;
+    return -1; // Insufficient valid samples, skip variant
   }
-
-  // Try GP (genotype probabilities)
-  float *gp = NULL;
-  int ngp_arr = 0;
-  if (bcf_get_format_float(vcf_hdr, rec, "GP", &gp, &ngp_arr) >= 0 && gp != NULL) {
-    if (ngp_arr >= nsmpl * 3) { // Expect 3 probabilities per sample
-      *nds_arr = nsmpl;
-      *dosages = (float *)malloc(nsmpl * sizeof(float));
-      if (!*dosages) {
-	free(gp);
-	return -1; // Memory allocation failure
-      }
-      for (int i = 0; i < nsmpl; i++) {
-	float p00 = gp[i * 3 + 0]; // P(0/0)
-	float p01 = gp[i * 3 + 1]; // P(0/1)
-	float p11 = gp[i * 3 + 2]; // P(1/1)
-	if (isnan(p00) || isnan(p01) || isnan(p11) || p00 < 0 || p01 < 0 || p11 < 0) {
-	  //(*dosages)[i] = 0; // Invalid probabilities
-	  free(*dosages); // Free allocated memory
-	  *dosages = NULL;
-	  free(gp);
-	  return -1;
-	} else {
-	  (*dosages)[i] = 0 * p00 + 1 * p01 + 2 * p11; // Dosage
-	}
-	*alf += (*dosages)[i];
-      }
-      *alf /= (nsmpl * 2.0);
-      free(gp);
-      return 0; // Success
-    }
-    free(gp);
-  }
-
-  // Try GT (genotype)
-  int *gt = NULL;
-  int ngt_arr = 0;
-  if (bcf_get_format_int32(vcf_hdr, rec, "GT", &gt, &ngt_arr) >= 0 && gt != NULL) {
-    if (ngt_arr >= nsmpl * 2) { // Expect 2 alleles per sample
-      *nds_arr = nsmpl;
-      *dosages = (float *)malloc(nsmpl * sizeof(float));
-      if (!*dosages) {
-	free(gt);
-	return -1; // Memory allocation failure
-      }
-      for (int i = 0; i < nsmpl; i++) {
-	int g1 = bcf_gt_allele(gt[i * 2 + 0]);
-	int g2 = bcf_gt_allele(gt[i * 2 + 1]);
-	if (g1 < 0 || g2 < 0) {
-	  //(*dosages)[i] = 0; // Missing genotype
-	  free(*dosages); // Free allocated memory
-	  *dosages = NULL;
-	  free(gt); 
-	  return -1;
-	} else {
-	  (*dosages)[i] = (float)(g1 + g2); // Dosage: 0/0 -> 0, 0/1 -> 1, 1/1 -> 2
-	}
-	*alf += (*dosages)[i];
-      }
-      *alf /= (nsmpl * 2.0);
-      free(gt);
-      return 0; // Success
-    }
-    free(gt);
-  }
-
-  // No usable field found
-  return -1;
 }
-
 
 
 // Setting for long options. 
@@ -436,6 +448,12 @@ int main(int argc, char *argv[]) {
 	  continue;
 	}
 
+	// RPR: I thought introduced a bug here, when introducing extract_dosages as I don't update the alf at all now. 
+	// Sorry that is not true, I have alf passed by &, so that is not
+	//      the issue. Anyway I'm going to try the new function. 
+	//      I could also change the extract dosage function to return a float instead
+	//      with negative value for making the warning. 
+	//    This would suffice if DS only, 
 	//	if (bcf_get_format_float(vcf_hdr, rec[jj], "DS", &dosages, &nds_arr) < 0) continue;	
 	//	for (int ii = 0; ii < nsmpl; ii++) {
 	//  //	fprintf(stderr,"%f ",dosages[i]);
