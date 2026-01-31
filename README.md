@@ -1,2 +1,12 @@
 # fastdemux
-Demultiplexing by genotype
+
+Installation
+
+
+How to call fastdemux
+
+
+Required input files
+
+
+Interpretation of output 
