@@ -112,3 +112,18 @@ This file contains donor-specific discriminant scores for each barcode and repre
 - Use `*.fdout.raw.info.2nd.txt.gz` for downstream analyses requiring high-confidence donor assignments.
 - Use `*.fdout.raw.info.txt.gz` for quality control, diagnostics, and inspection of low-information barcodes.
 - Use `*.corr.txt.gz` and `*.dlda.txt.gz` primarily for diagnostic, benchmarking, and methodological evaluation.
+
+## Benchmarking
+
+We benchmarked `fastdemux` against commonly used genotype-based demultiplexing tools (demuxlet, vireo, and demuxalot) across varying sequencing depths and genotype SNP coverage thresholds. Performance was evaluated in terms of donor assignment error rate, runtime, and peak memory usage.
+
+Across all tools, donor assignment error rates decreased as sequencing depth increased. At very low read fractions (1–5%), all methods performed similarly. At moderate to high read fractions (≥30%), `fastdemux` consistently achieved the lowest total-droplet error rates, indicating improved robustness as sequencing depth increases. In addition to improved accuracy, `fastdemux` showed substantially lower runtime and memory usage than demuxlet and vireo, with memory usage remaining near constant across read depths.
+
+![Benchmarking across read depth](https://raw.githubusercontent.com/piquelab/fastdemux_bench/main/figures/fig2new.png)
+
+When varying the minimum SNP coverage threshold used to filter the genotype VCF, all tools exhibited increasing error rates as fewer SNPs were retained. Across all thresholds, `fastdemux` consistently achieved lower error rates than demuxlet, vireo, and demuxalot. Performance differences were most pronounced at lower SNP coverage thresholds (G49 and G9), where `fastdemux` retained the lowest error rate while maintaining fast runtimes and minimal memory usage. In contrast, demuxlet and vireo showed sharp increases in runtime and memory as SNP density increased.
+
+![Benchmarking across SNP coverage thresholds](https://raw.githubusercontent.com/piquelab/fastdemux_bench/main/figures/fig3new.png)
+
+Overall, these benchmarks demonstrate that `fastdemux` effectively leverages large numbers of lower-coverage SNPs to achieve accurate donor assignment while remaining computationally efficient, making it well suited for large-scale and low-coverage single-cell datasets, including scATAC-seq.
+
