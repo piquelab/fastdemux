@@ -5,7 +5,7 @@ preprint available at
 
 # Running fastdemux
 
-`fastdemux` uses a DLDA approach to assign single cells to donors using genotype information. This section describes how to run `fastdemux` on Cell Ranger outputs using a donor genotype VCF.
+`fastdemux` uses a DLDA approach to assign single cells to donors using genotype information. This section describes how to run `fastdemux` on Cell Ranger output using a donor genotype VCF.
 
 ## Required inputs
 
@@ -17,13 +17,16 @@ For each **library**, you need:
   `raw_feature_bc_matrix/barcodes.tsv.gz`  
   (or `filtered_feature_bc_matrix/barcodes.tsv.gz`)
 - **Genotype VCF** containing donor genotypes:  
-  `*.vcf.gz` (bgzipped and index file)
+  `*.vcf.gz` (bgzipped and index file) 
 
 ### Important requirements and recommendations
 
 - **Chromosome naming and ordering must match between the BAM and VCF.**  
-  For example, if the BAM uses `chr1`…`chr22`, the VCF should also use `chr1`…`chr22` with the same chromosome ordering. Mismatches in chromosome annotation or ordering can lead to failed runs or incorrect results.
+  For example, if the BAM uses `chr1`…`chr22`, the VCF should also use `chr1`…`chr22` with the same chromosome ordering. Mismatches in chromosome annotation or ordering can lead to failed runs or incorrect results. It is important to independently check that the vcf and bam files use the same reference genome.
 - **Recommended VCF preprocessing:** filter to **biallelic SNPs** and prefer sites with **≥10× read coverage** to improve robustness of demultiplexing.
+
+Note that it is preferrable that a large amount of SNPs with coverage be imputed. Dosage DS values are preferred but GP or GT values can be used if not available. You can use GENCOVE, GLIMPSE2, or TopMed Imputation server, to generage an imputed vcf file from low coverage sequencing data or from genotyping microarrays. We have repos ([scRNAseq repo](https://github.com/piquelab/counts_cellranger), [scATACseq repo](https://github.com/piquelab/counts_cellranger_atac)) with templates on how we use cellranger and fastdemux in a production environment at the Wayne State University High Performance Computing Grid. The scripts show how to also filter the genotype VCF file and check that bam and vcf are consistently ordered. 
+
 
 ## Example directory structure
 
