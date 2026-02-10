@@ -1,5 +1,6 @@
 # fastdemux
-preprint available at 
+
+Preprint available at 
 
 # Installation
 
@@ -13,6 +14,7 @@ cmake ../
 make
 make install
 ```
+Note that we require [htslib](https://github.com/samtools/htslib) to be installed. You may need to adjust the library location in the [CMakeLists.txt](CMakeLists.txt). It also uses OpenMP and Zlib that should be standard on most systems. You also need [klib](https://github.com/samtools/klib) which can be cloned within the repository. We also provide a Google Colab example for the installation and use. 
 
 
 # Running fastdemux
