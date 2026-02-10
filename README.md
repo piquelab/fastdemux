@@ -3,6 +3,18 @@ preprint available at
 
 # Installation
 
+```
+git clone https://github.com/piquelab/fastdemux.git
+cd fastdemux
+git clone https://github.com/attractivechaos/klib.git
+mkdir build
+cd build
+cmake ../
+make
+make install
+```
+
+
 # Running fastdemux
 
 `fastdemux` uses a DLDA approach to assign single cells to donors using genotype information. This section describes how to run `fastdemux` on Cell Ranger output using a donor genotype VCF.
